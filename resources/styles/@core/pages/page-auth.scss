@@ -1,0 +1,57 @@
+.auth-wrapper {
+  min-block-size: calc(var(--vh, 1vh) * 100);
+  //min-height: calc(var(--vh, 1vh) * 100);
+  background-image: url("@images/pages/group_wo.jpg");
+  background-size: cover;
+}
+
+.auth-footer-mask {
+  position: absolute;
+  inset-block-end: 0;
+  min-inline-size: 100%;
+}
+
+.auth-card {
+  z-index: 1 !important;
+  min-width: 400px;
+}
+
+.auth-footer-start-tree,
+.auth-footer-end-tree {
+  position: absolute;
+  z-index: 1;
+}
+
+.auth-footer-start-tree {
+  inset-block-end: 0;
+  inset-inline-start: 0;
+}
+
+.auth-footer-end-tree {
+  inset-block-end: 0;
+  inset-inline-end: 0;
+}
+
+.auth-illustration {
+  z-index: 1;
+}
+
+.auth-logo {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: 2rem;
+  inset-inline-start: 2.3rem;
+}
+
+.auth-bg {
+  background-color: rgb(var(--v-theme-surface));
+}
+
+
+
+
+@media (max-width: 600px) {
+  .auth-wrapper  {
+    background-image: none;
+  }
+}
