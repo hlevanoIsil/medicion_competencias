@@ -1,7 +1,7 @@
 const theme = {
   defaultTheme: 'light',
   app: {
-    name: 'MANAGER'
+    name: ''
   },
   themes: {
     light: {

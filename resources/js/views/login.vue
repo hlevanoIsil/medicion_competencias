@@ -65,7 +65,7 @@ onMounted(() => {
 
       <VCardText class="pt-2">
         <h5 class="text-h5 font-weight-bold mb-1 text-center text-black">
-          ISIL MANAGER
+          ISIL
         </h5>
       </VCardText>
 

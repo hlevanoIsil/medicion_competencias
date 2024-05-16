@@ -39,14 +39,14 @@ const router = createRouter({
           
         },
         {
-          path: '/documents',
-          name: 'documents',
-          component: () => import('@/views/documents/documents/documents.vue'),
+          path: '/grupos', 
+          name: 'grupos',
+          component: () => import('@/views/grupos/index.vue'),
           beforeEnter: ifAuthenticated,
           meta: {
             layout: 'content',
             requiresAuth: true,
-            levelOne: 'reports'
+            levelOne: 'evaluar'
           },
         },
       
