@@ -54,30 +54,31 @@
                                 </v-icon></v-btn>
                         </v-col>
                     </v-row>
+                    <v-divider class="mt-3"></v-divider>
                     <v-row>
                         <v-col>
                             <v-expand-transition>
                                 <div v-show="showRubrica">
-                                    <v-table class="mt-3 pt-6">
+                                    <v-table class="mt-0 pt-6">
                                         <template v-slot:default>
                                         <thead style="background-color: #f9fafc;">
                                             <tr>
-                                                <th class="text-center">
+                                                <th class="text-center font-weight-bold">
                                                     CRITERIOS
                                                 </th>
-                                                <th class="text-center">
+                                                <th class="text-center font-weight-bold">
                                                     EXCELENTE
                                                 </th>
-                                                <th class="text-center">
+                                                <th class="text-center font-weight-bold">
                                                     BUENO
                                                 </th>
-                                                <th class="text-center">
+                                                <th class="text-center font-weight-bold">
                                                     EN PROCESO
                                                 </th>
-                                                <th class="text-center">
+                                                <th class="text-center font-weight-bold">
                                                     DEFICIENTE
                                                 </th>
-                                                <th class="text-center">
+                                                <th class="text-center font-weight-bold">
                                                     INSATISFACTORIO
                                                 </th>
                                             </tr>
@@ -85,100 +86,40 @@
                                        
                                         <tbody>
                                             <tr
-                                            v-for="item in items"
-                                            :key="item.key"
-                                            
+                                                v-for="item in items"
+                                                :key="item.key"                                            
                                             >
-                                                <td class="text-primary" :class="[item.CRITERIO!='TOTAL' ? 'text-primary' : '']" > <strong>{{ item.CRITERIO }}</strong></td>
-                                                <td class="">{{ item.DESC_EXC }}</td>
-                                                <td class="">{{ item.DESC_BUE }}</td>
-                                                <td class="">{{ item.DESC_ENPR }}</td>
-                                                <td class="">{{ item.DESC_DEFI }}</td>
-                                                <td class="">{{ item.DESC_INSAT }}</td>
+                                                <td :class="[item.CRITERIO!='TOTAL' ? '' : 'tdBlue']" width="180" >
+                                                     <strong :class="[item.CRITERIO!='TOTAL' ? '' : 'text-white']">{{ item.CRITERIO }}: </strong>
+                                                     
+                                                    <span v-if="item.CRITERIO!='TOTAL'" class="text-primary text-h6">
+                                                        <br> {{ item.NOM_CRITERIO }}
+                                                    </span>
+                                                </td>
+                                                <td :class="[item.CRITERIO!='TOTAL' ? 'pt-2' : 'tdBlue text-white']">
+                                                    {{ item.DESC_EXC }}  
+                                                    <p class="text-center mt-2"><strong>{{ item.PUN_EXC }}</strong></p>
+                                                </td>
+                                                <td :class="[item.CRITERIO!='TOTAL' ? 'pt-2' : 'tdBlue text-white']">
+                                                    {{ item.DESC_BUE }}
+                                                    <p class="text-center mt-2"><strong>{{ item.PUN_BUE }}</strong></p>
+                                                </td>
+                                                <td :class="[item.CRITERIO!='TOTAL' ? 'pt-2' : 'tdBlue text-white']">
+                                                    {{ item.DESC_ENPR }}
+                                                    <p class="text-center mt-2"><strong>{{ item.PUN_ENPR }}</strong></p>
+                                                </td>
+                                                <td :class="[item.CRITERIO!='TOTAL' ? 'pt-2' : 'tdBlue text-white']">
+                                                    {{ item.DESC_DEFI }}
+                                                    <p class="text-center mt-2"><strong>{{ item.PUN_DEFI }}</strong></p>
+                                                </td>
+                                                <td :class="[item.CRITERIO!='TOTAL' ? 'pt-2' : 'tdBlue text-white']">
+                                                    {{ item.DESC_INSAT }}
+                                                    <p class="text-center mt-2"><strong>{{ item.PUN_INSAT }}</strong></p>
+                                                </td>
                                             </tr>
                                         </tbody>
                                     </template>
                                     </v-table>
-                            <!-- 
-                            <v-data-table
-                                density="comfortable"
-                                :headers="headers"
-                                :items="items"      
-                                no-data-text="No hay datos para mostrar"
-                                :row-props="rowProps"
-                            >
-                                <template #[`item.NOM_CRITERIO`]="{item}">
-                                    <slot name="nombres" v-if="item.value.NOM_CRITERIO!='TOTAL'">
-                                        <strong>{{item.value.CRITERIO}}:</strong> <br><br>
-                                        <span class="text-primary font-weight-medium text-lg">{{item.value.NOM_CRITERIO}}</span>
-                                        <br>
-                                    </slot>
-                                    <slot name="nombres" v-if="item.value.NOM_CRITERIO=='TOTAL'">
-                                        <strong>TOTAL</strong>
-                                    </slot>
-                                </template>
-
-                                <template #[`item.DESC_EXC`]="{item}">
-                                    <slot name="nombres" v-if="item.value.NOM_CRITERIO!='TOTAL'">
-                                        {{item.value.DESC_EXC}}
-                                        <br><br>
-                                        <strong>{{item.value.PUN_EXC}}</strong>
-                                    </slot>
-
-                                    <slot name="nombres" v-if="item.value.NOM_CRITERIO=='TOTAL'">
-                                        <strong>{{item.value.PUN_EXC}}</strong>
-                                    </slot>
-                                </template>
-
-                                <template #[`item.DESC_BUE`]="{item}">
-                                    <slot name="nombres" v-if="item.value.NOM_CRITERIO!='TOTAL'">
-                                        {{item.value.DESC_EXC}}
-                                        <br><br>
-                                        <strong>{{item.value.PUN_BUE}}</strong>
-                                    </slot>
-
-                                    <slot name="nombres" v-if="item.value.NOM_CRITERIO=='TOTAL'">
-                                        <strong>{{item.value.PUN_BUE}}</strong>
-                                    </slot>
-                                </template>
-
-                                <template #[`item.DESC_ENPR`]="{item}">
-                                    <slot name="nombres" v-if="item.value.NOM_CRITERIO!='TOTAL'">
-                                        {{item.value.DESC_ENPR}}
-                                        <br><br>
-                                        <strong>{{item.value.PUN_ENPR}}</strong>
-                                    </slot>
-
-                                    <slot name="nombres" v-if="item.value.NOM_CRITERIO=='TOTAL'">
-                                        <strong>{{item.value.PUN_ENPR}}</strong>
-                                    </slot>
-                                </template>
-
-                                <template #[`item.DESC_DEFI`]="{item}">
-                                    <slot name="nombres" v-if="item.value.NOM_CRITERIO!='TOTAL'">
-                                        {{item.value.DESC_DEFI}}
-                                        <br><br>
-                                        <strong>{{item.value.PUN_DEFI}}</strong>
-                                    </slot>
-
-                                    <slot name="nombres" v-if="item.value.NOM_CRITERIO=='TOTAL'">
-                                        <strong>{{item.value.PUN_DEFI}}</strong>
-                                    </slot>
-                                </template>
-
-                                <template #[`item.DESC_INSAT`]="{item}">
-                                    <slot name="nombres" v-if="item.value.NOM_CRITERIO!='TOTAL'">
-                                        {{item.value.DESC_INSAT}}
-                                        <br><br>
-                                        <strong>{{item.value.PUN_INSAT}}</strong>
-                                    </slot>
-
-                                    <slot name="nombres" v-if="item.value.NOM_CRITERIO=='TOTAL'">
-                                        <strong>{{item.value.PUN_INSAT}}</strong>
-                                    </slot>
-                                </template>
-                            <template v-slot:bottom></template>
-                            </v-data-table> -->
                             </div>
                             </v-expand-transition>
                         </v-col>
@@ -267,7 +208,7 @@
                                                 class="mr-1 ml-1 pr-1 pl-1"
                                             >
                                                 <v-list-sub-header v-if="i === 'subheader'" > <strong>{{  itemv }}</strong> </v-list-sub-header>
-                                                <v-list-item-title class="listaItem" v-if="i !== 'subheader'" v-bind:title="itemv.DESCR">{{ itemv.PUNT }}</v-list-item-title>
+                                                <v-list-item-title class="listaItem" v-if="i !== 'subheader'"  @click="calificarGrupal(indexC, itemv.COD);" v-bind:title="itemv.DESCR">{{ itemv.PUNT }}</v-list-item-title>
                                             </v-list-item>
                                         </v-list>
                                     </v-menu>
@@ -338,7 +279,7 @@
                     <v-divider></v-divider>
                     <v-row class="mt-2 mb-1">
                         <v-col cols="12" md="12" >
-                            <v-btn size="small" color="warning" @click="isShowEntityActive=true" > 
+                            <v-btn size="small" color="warning"  @click="dialog = true"> 
                                         <v-icon
                                             left
                                             dark
@@ -350,14 +291,15 @@
                     <v-divider></v-divider>
                     <v-row class="mt-2">
                         <v-col cols="12" md="12" class="text-right">
+                            <!--
                             <v-btn color="primary" @click="isShowEntityActive=true" class="mr-2" > 
                                         <v-icon
                                             left
                                             dark
                                             icon="mdi-floppy-disc"
                                         >
-                                        </v-icon>&nbsp;Guardar</v-btn>
-                            <v-btn color="error" @click="isShowEntityActive=true" > 
+                                        </v-icon>&nbsp;Guardar</v-btn>-->
+                            <v-btn color="error" @click="isShowEvaluacion=false" > 
                                 <v-icon
                                     left
                                     dark
@@ -370,10 +312,69 @@
             </v-card>
         </v-col>
     </v-row>
+    <v-dialog
+      v-model="dialog"
+      max-width="600"
+    >
+    <v-form ref="form"
+                v-model="valid"
+                @submit="comentarioGrupal" 
+                @submit.prevent="validate">
+      <v-card
+        prepend-icon="mdi-account"
+        v-bind:title="'Comentarios del grupo ' + entityData.grupo"
+      >
+        <v-card-text>
+            
+            <v-row dense>
+                <v-col
+                cols="12"
+                md="12"
+                >
+                <v-textarea
+                    label="Comentarios"
+                    rows="6"
+                    variant="outlined"
+                    v-model="entityData.commentGrupal"
+                    shaped
+                    class="mb-1 mt-1"
+                    :rules="[validators.required]"                    
+                    v-bind:model-value="coment_grupal"
+                ></v-textarea>
+                </v-col>
+                
+            </v-row>
+         
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn
+            text="Cerrar"
+            variant="plain"
+            @click="cerrarModal"
+          ></v-btn>
+          <v-btn  color="primary" type="submit" > 
+                        <v-icon
+                            left
+                            dark
+                            icon="mdi-content-save"
+                        >
+                        </v-icon>
+                        Guardar</v-btn>
+
+        </v-card-actions>
+      </v-card>
+    </v-form>
+    </v-dialog>
 </template>
 <script>
 import UCDialogQuestion from '@/components/UCDialogQuestion.vue';
 import useAppConfig from '@core/@app-config/useAppConfig';
+import { required, requiredObject } from '@core/utils/validation.js';
 export default {
     
     components: {
@@ -390,6 +391,10 @@ export default {
         nrcs: {
             type: Array,
             required: true,
+        },
+        nrcs_lbls: {
+            type: Array,
+            required: true,
         }
     },
     setup(){
@@ -399,6 +404,11 @@ export default {
         let showRubrica = ref(false)
         let showSnackbar = ref(false)
         let showSnackbarCom1 = ref(false)
+        const valid = ref(false)
+        const form = ref(null)
+        const validate = () => {
+            form.value.validate()
+        }
         
         let itemsCal= ref ([
             { type: 'subheader', title: 'Elige una calificación: ' },
@@ -417,6 +427,7 @@ export default {
         ]
         let itemsNot = ref([])
         let criterios = ref([])
+        let coment_grupal = ref()
         let headersNot = [
             { title: 'NOMBRES', key: 'NOMBRES', width:120, filterable: true , width: 300, sortable: false},
             { title: 'CRITERIO 1', key: 'criterio_1', filterable: true, sortable: false},
@@ -437,10 +448,17 @@ export default {
             showSnackbarCom1,
             grupos,
             itemsCal,
-            criterios
+            criterios,
+            valid,
+            form,
+            validate,
+            validators: { required, requiredObject },
+            coment_grupal
         }
     },
     beforeMount(){
+        //console.log(this.nrcs_lbls)
+
         this.initialize() 
     },
     methods:{
@@ -458,13 +476,13 @@ export default {
         cargarRubricas(){
             this.$http.post('evaluacion/list-rubricas-x-curso', this.entityData)
                 .then(response => {
-                    this.grupos = []
+                    //this.grupos = []
                     this.criterios = response.data.criterios
                     this.items = response.data.data
-                    console.log(response.data.data)
+                    //console.log(response.data.data)
                     //this.items = response.data.data
                     //this.totalItems1 = Number(response.data.rows) 
-                    //this.overlay = false
+                    this.overlay = false
                     tableKey++
                 })
                 .catch(error => {
@@ -478,9 +496,20 @@ export default {
             this.overlay = true
             this.$http.post('grupos/list-grupos', this.entityData)
                 .then(response => {
-                    //console.log(response.data.data)
-                    
+                    //console.log(response.data.data) 
+                    this.entityData.horario = '' + this.nrcs_lbls[this.entityData.nrc]['INICIO_CLASE'] + ' - a ' + this.nrcs_lbls[this.entityData.nrc]['FIN_CLASE']
+                    this.entityData.mod_sede = this.nrcs_lbls[this.entityData.nrc]['MODALIDAD'] + ' - ' + this.nrcs_lbls[this.entityData.nrc]['SEDE']
+                    this.entityData.curso = this.nrcs_lbls[this.entityData.nrc]['CURSO']
+                    this.entityData.cod_curso = this.nrcs_lbls[this.entityData.nrc]['COD_CURSO']
+                    this.cargarRubricas()
+                    response.data.data.push({GRUPO_SOLO: '', GRUPO: 'Elegir grupo'});
+                    this.entityData.grupo = ''
                     this.grupos = response.data.data
+                    this.itemsNot = []
+
+                    // cambia labels
+                    //console.log(this.entityData.nrc)
+
                     this.overlay = false
                 })
                 .catch(error => {
@@ -494,7 +523,8 @@ export default {
                 .then(response => {        
                     //console.log(response.data.data)        
                     this.itemsNot = response.data.data 
-                    console.log(this.itemsNot)
+                    this.coment_grupal = response.data.coment_grupal 
+                    //console.log(this.itemsNot)
                     //this.totalItems2 = Number(response.data.rows) 
                     this.overlay = false
 
@@ -528,6 +558,22 @@ export default {
                     //isLoading.value = false
                 })
         },
+        calificarGrupal(criterio, codNota){
+
+            this.overlay = true
+            this.entityData.criterio = criterio
+            this.entityData.cod_nota = codNota
+            this.$http.post('evaluacion/alumno-save-grupal', this.entityData)
+                .then(response => {  
+                    
+                    this.listarAlumnosGrupo() 
+                    this.showSnackbar = true   
+                    //this.overlay = false  
+                })
+                .catch(error => {
+                    //isLoading.value = false
+                })
+        },
         updateCommentInd(e, pidm){
             this.overlay = true
             this.entityData.pidm_alumno = pidm
@@ -542,14 +588,24 @@ export default {
                     //isLoading.value = false
                 })
         },
-        rowProps(data) {
-            return {
-                class: {
-                    'bgAzul': true,
-                    //'is-selectable': data.item.isSelectable,
-                },
-            };
-        }
+        comentarioGrupal(){
+            
+            if (this.valid) {
+                this.overlay = true  
+                this.$http.post('evaluacion/comentario-save-grupal', this.entityData)
+                    .then(response => {
+                        this.showSnackbarCom1 = true    
+                        this.overlay = false  
+                        
+                    }).catch(err =>{
+                        this.overlay = false
+                    });
+    
+            } 
+        },
+        cerrarModal(){
+            this.dialog = false
+        },
 
     }
 }
@@ -577,5 +633,7 @@ export default {
     cursor: pointer;
 
 }
-
+.tdBlue{
+    background-color: #44c7ff;
+}
 </style>

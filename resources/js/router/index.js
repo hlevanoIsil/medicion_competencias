@@ -46,10 +46,20 @@ const router = createRouter({
           meta: {
             layout: 'content',
             requiresAuth: true,
-            levelOne: 'evaluar'
+            //levelOne: 'evaluar'
           },
         },
-      
+        {
+          path: '/reportes', 
+          name: 'reportes',
+          component: () => import('@/views/reportes/index.vue'),
+          beforeEnter: ifAuthenticated,
+          meta: {
+            layout: 'content',
+            requiresAuth: true,
+            //levelOne: 'evaluar'
+          },
+        },
 
     
       ]

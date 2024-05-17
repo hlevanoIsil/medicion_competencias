@@ -110,6 +110,7 @@
     <evaluacion v-if="isShowEvaluacion && !isShowEntityActive"
         :entityData="entityData"
         :nrcs="nrcs"
+        :nrcs_lbls="nrcs_lbls2"
         @on-backward="createEntityOrClose">
     </evaluacion>
 </template>
@@ -130,6 +131,7 @@ import gruposInterfaz from './grupos-components/gruposInterfaz.vue';
   let entityData = ref({periodo: '202320'})
   let nrcs = ref([])
   let nrcs_lbls = ref([])
+  let nrcs_lbls2 = ref([])
   function initialize() {
       setOverlay(true)
       $http.post('/grupos/list-nrcs-docente')
@@ -138,7 +140,7 @@ import gruposInterfaz from './grupos-components/gruposInterfaz.vue';
             response.data.data.forEach((element) => 
                 nrcs_lbls[element['NRC']] = element
             );
-            
+            nrcs_lbls2.value = nrcs_lbls
             setOverlay(false)
         })
   }
@@ -156,6 +158,8 @@ import gruposInterfaz from './grupos-components/gruposInterfaz.vue';
     entityData.value.mod_sede = nrcs_lbls[entityData.value.nrc]['MODALIDAD'] + ' - ' + nrcs_lbls[entityData.value.nrc]['SEDE']
     entityData.value.curso = nrcs_lbls[entityData.value.nrc]['CURSO']
     entityData.value.cod_curso = nrcs_lbls[entityData.value.nrc]['COD_CURSO']
+    //console.log(nrcs)
+    //console.log(nrcs_lbls2)
   }
     onBeforeMount(() => {
         initialize() 

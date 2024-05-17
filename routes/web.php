@@ -76,9 +76,11 @@ Route::group(['prefix' => 'evaluacion', 'middleware' => 'auth:sanctum'], functio
     Route::post('list-rubricas-x-curso', [\App\Http\Controllers\EvaluacionController::class, 'lisRubricasXcurso']);
     Route::post('list-alumnos', [\App\Http\Controllers\EvaluacionController::class, 'listAlumnos']);
     Route::post('alumno-save-individual', [\App\Http\Controllers\EvaluacionController::class, 'saveIndividual']);
-
+    Route::post('alumno-save-grupal', [\App\Http\Controllers\EvaluacionController::class, 'saveGrupal']);
     Route::post('comentario-save-individual', [\App\Http\Controllers\EvaluacionController::class, 'saveCommentIndividual']);
     Route::post('comentario-save-grupal', [\App\Http\Controllers\EvaluacionController::class, 'saveCommentGrupal']);
+
+    Route::get('preview-pdf', [\App\Http\Controllers\EvaluacionController::class, 'previewPdf']);
 });
 
 Route::get('/{any}', [ApplicationController::class, 'index'])->where('any', '.*');

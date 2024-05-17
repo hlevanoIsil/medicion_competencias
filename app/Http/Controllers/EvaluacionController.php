@@ -5,32 +5,38 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\App;
 
 class EvaluacionController extends Controller
 {
 
     public static function lisRubricasXcurso(Request $request)
     {
-        //dd($request);
+        //dd($request['cod_curso']);
         $curso = $request['cod_curso'];
         $nrc = $request['nrc'];
         $periodo = '202320';
         //dd($curso);
         //dd($nrc);
         //dd($periodo);
-        $pdo = DB::connection('oracle')->getPdo();
-        $stmt = $pdo->prepare("BEGIN ISIL.SP_MEDICIONCOMP_RUBRICAS_DET_X_CURSO(:periodo, :curso, :nrc, :cursor); END;");
-        $stmt->bindParam(':periodo', $periodo, \PDO::PARAM_STR);
-        $stmt->bindParam(':curso', $curso, \PDO::PARAM_STR);
-        $stmt->bindParam(':nrc', $nrc, \PDO::PARAM_STR);
-        $stmt->bindParam(':cursor', $cursor, \PDO::PARAM_STMT | \PDO::PARAM_INPUT_OUTPUT);
-        $stmt->execute();
-        oci_execute($cursor);
+        try {
+            $pdo = DB::connection('oracle')->getPdo();
+            $stmt = $pdo->prepare("BEGIN ISIL.SP_MEDICIONCOMP_RUBRICAS_DET_X_CURSO(:periodo, :curso, :nrc, :cursor); END;");
+            $stmt->bindParam(':periodo', $periodo, \PDO::PARAM_STR);
+            $stmt->bindParam(':curso', $curso, \PDO::PARAM_STR);
+            $stmt->bindParam(':nrc', $nrc, \PDO::PARAM_STR);
+            $stmt->bindParam(':cursor', $cursor, \PDO::PARAM_STMT | \PDO::PARAM_INPUT_OUTPUT);
+            $stmt->execute();
+            oci_execute($cursor);
 
-        oci_fetch_all($cursor, $data, null, null, OCI_FETCHSTATEMENT_BY_ROW);
-        oci_free_statement($cursor);
-        $stmt->closeCursor();
+            oci_fetch_all($cursor, $data, null, null, OCI_FETCHSTATEMENT_BY_ROW);
+            oci_free_statement($cursor);
+            $stmt->closeCursor();
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+        }
 
+        //dd($data);
         $crit_cols = array_column($data, 'NUM_CRITERIO');
         //dd($data);
         $criterios = [];
@@ -105,6 +111,7 @@ class EvaluacionController extends Controller
         $return = [];
         $num_criterios = 5;
         $count = 0;
+        $coment_grupal = "";
         foreach ($data as $fila) {
             //dd($fila);
             $return[$count]['NOMBRES'] = $fila['NOMBRES'];
@@ -117,12 +124,16 @@ class EvaluacionController extends Controller
             }
             $return[$count]['comments']  = $fila['COMENTARIOS'];
             $return[$count]['PIDM']  = $fila['PIDM'];
+
+            $coment_grupal  = $fila['COMENTARIO_GRUPAL'];
+
             $count++;
         }
         //dd($return);
         return [
             "data" => $return,
-            'rows' => count($data)
+            'rows' => count($data),
+            'coment_grupal' => $coment_grupal
         ];
     }
 
@@ -133,6 +144,28 @@ class EvaluacionController extends Controller
             DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_SAVE_NOTA_INDIVIDUAL(?, ?, ?, ?, ?, ?, ?)', [
                 $request->session()->get('pidm_docente'),
                 $request->pidm_alumno,
+                $request->nrc,
+                $request->cod_curso,
+                $request->periodo,
+                $request->criterio,
+                $request->cod_nota
+                //&$status,
+                //&$message
+            ]);
+        } catch (\Exception $e) {
+            // dd($e);
+        }
+        $ret['mensaje'] = "Registro correcto";
+        return response($ret, Response::HTTP_OK);
+    }
+
+    public static function saveGrupal(Request $request)
+    {
+        //dd($request);
+        try {
+            DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_SAVE_NOTA_GRUPAL(?, ?, ?, ?, ?, ?, ?)', [
+                $request->session()->get('pidm_docente'),
+                $request->grupo,
                 $request->nrc,
                 $request->cod_curso,
                 $request->periodo,
@@ -177,12 +210,25 @@ class EvaluacionController extends Controller
                 null,
                 $request->nrc,
                 $request->grupo,
-                $request->comment
+                $request->commentGrupal
             ]);
         } catch (\Exception $e) {
             // dd($e);
         }
         $ret['mensaje'] = "Registro correcto";
         return response($ret, Response::HTTP_OK);
+    }
+    public static function previewPdf(Request $request)
+    {
+        $detalles = [];
+
+        $view = view('evaluacion.notas_individual', compact(
+            'detalles',
+        ))->render();
+
+        $pdf = App::make('dompdf.wrapper');
+        $pdf->loadHTML($view);
+
+        return $pdf->stream('enrollment.pdf');
     }
 }
