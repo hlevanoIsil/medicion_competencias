@@ -9,7 +9,14 @@ use Illuminate\Support\Facades\App;
 
 class EvaluacionController extends Controller
 {
+    protected $_uploadFolder = 'notas_alumnos';
 
+    public function __construct()
+    {
+        if (!file_exists($this->_uploadFolder)) {
+            mkdir($this->_uploadFolder, 0777, true);
+        }
+    }
     public static function lisRubricasXcurso(Request $request)
     {
         //dd($request['cod_curso']);
@@ -218,6 +225,7 @@ class EvaluacionController extends Controller
         $ret['mensaje'] = "Registro correcto";
         return response($ret, Response::HTTP_OK);
     }
+
     public static function previewPdf(Request $request)
     {
         $detalles = [];
@@ -230,5 +238,91 @@ class EvaluacionController extends Controller
         $pdf->loadHTML($view);
 
         return $pdf->stream('enrollment.pdf');
+    }
+    public function viewPdf(Request $request)
+    {
+        //dd($request);
+        $periodo = $request['periodo'];
+        $nrc = $request['nrc'];
+        $curso = $request['cod_curso'];
+        $grupo = $request['grupo'];
+        $dni = $request['spriden_id'];
+        $apellidos = $request['last_name'];
+        $nombres = $request['first_name'];
+        //dd($curso);
+        //dd($nrc);
+        //dd($periodo);
+        try {
+            $pdo = DB::connection('oracle')->getPdo();
+            $stmt = $pdo->prepare("BEGIN ISIL.SP_MEDICIONCOMP_REPORTE_NOTAS(:periodo, :nrc, :curso, :grupo, :dni, :apellidos, :nombres, :cursor); END;");
+            $stmt->bindParam(':periodo', $periodo, \PDO::PARAM_STR);
+            $stmt->bindParam(':nrc', $nrc, \PDO::PARAM_STR);
+            $stmt->bindParam(':curso', $curso, \PDO::PARAM_STR);
+            $stmt->bindParam(':grupo', $grupo, \PDO::PARAM_STR);
+            $stmt->bindParam(':dni', $dni, \PDO::PARAM_STR);
+            $stmt->bindParam(':apellidos', $apellidos, \PDO::PARAM_STR);
+            $stmt->bindParam(':nombres', $nombres, \PDO::PARAM_STR);
+            $stmt->bindParam(':cursor', $cursor, \PDO::PARAM_STMT | \PDO::PARAM_INPUT_OUTPUT);
+            $stmt->execute();
+            oci_execute($cursor);
+
+            oci_fetch_all($cursor, $data, null, null, OCI_FETCHSTATEMENT_BY_ROW);
+            oci_free_statement($cursor);
+            $stmt->closeCursor();
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+        }
+
+        $pidms = array_column($data, 'SPRIDEN_PIDM');
+        $pidms = array_unique($pidms);
+        //dd($data);
+        $datos = [];
+
+        foreach ($pidms as $pidm) {
+
+            $notas = [];
+            $cont = 0;
+            $notaTotal = 0;
+            foreach ($data as $fila) {
+                //dd($fila);
+
+                if ($fila['SPRIDEN_PIDM'] == $pidm) {
+                    $datos[$pidm]["NOMBRES"] = $fila['FULLNAME'];
+                    $datos[$pidm]["GRUPO"] = $fila['GRUPO_NUM'];
+                    $datos[$pidm]["COMENTARIOS"] = $fila['COMENTARIOS'];
+
+                    $notas[$cont]['NUM_CRITERIO'] = "Criterio " . $fila['NUM_CRITERIO'];
+                    $notas[$cont]['NOM_CRITERIO'] = $fila['NOM_CRITERIO'];
+                    $notas[$cont]['DESCR_NOTA'] = $fila['DESCR_NOTA'];
+                    $notas[$cont]['NOTA'] = $fila['NOTA'];
+                    $notaTotal += (float)$fila['NOTA'];
+
+                    $datos[$pidm]["NOTAS"] = $notas;
+                    $datos[$pidm]["NOTA_FINAL"] = $notaTotal;
+                    $cont++;
+                }
+            }
+        }
+
+        $view = view('evaluacion.notas', compact(
+            'datos',
+        ))->render();
+
+        $pdf = App::make('dompdf.wrapper');
+        $pdf->loadHTML($view);
+
+        $nombre = "resultado_de_notas.pdf";
+        file_put_contents($this->_uploadFolder . "/" . $nombre, $pdf->output());
+
+        return response([], Response::HTTP_OK);
+        /*
+        $view = view('evaluacion.notas', compact(
+            'result',
+        ))->render();
+
+        $pdf = App::make('dompdf.wrapper');
+        $pdf->loadHTML($view);
+
+        return $pdf->stream('notas_alumnos.pdf');*/
     }
 }

@@ -81,6 +81,7 @@ Route::group(['prefix' => 'evaluacion', 'middleware' => 'auth:sanctum'], functio
     Route::post('comentario-save-grupal', [\App\Http\Controllers\EvaluacionController::class, 'saveCommentGrupal']);
 
     Route::get('preview-pdf', [\App\Http\Controllers\EvaluacionController::class, 'previewPdf']);
+    Route::post('view-pdf', [\App\Http\Controllers\EvaluacionController::class, 'viewPdf']);
 });
 
 Route::get('/{any}', [ApplicationController::class, 'index'])->where('any', '.*');

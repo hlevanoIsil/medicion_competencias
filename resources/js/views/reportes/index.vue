@@ -12,9 +12,9 @@
         <v-divider ></v-divider>
         <v-card-text v-if="!isShowEntityActive" class="my-4">
             <v-form ref="form"
-            v-model="valid"
-            @submit="onSubmitForm" 
-            @submit.prevent="validate">
+                v-model="valid"
+                @submit="onSubmit" 
+                @submit.prevent="validate">
                 <v-row>
                     <v-col cols="12" md="6">
                         <v-autocomplete
@@ -28,6 +28,7 @@
                         :menu-props="{ offsetY: true }"
                         hide-details="auto"
                         @update:modelValue="loadGroups" 
+                        :rules="[validators.requiredObject]"  
                     ></v-autocomplete>
                     </v-col>
                     <v-col cols="12" md="6">
@@ -41,7 +42,7 @@
                                     item-value="GRUPO_SOLO"
                                     :menu-props="{ offsetY: true }"
                                     hide-details="auto"
-                                    @update:modelValue="listarAlumnosGrupo" 
+                                    :rules="[validators.requiredObject]"  
                                 ></v-autocomplete>
                         </v-col>
                 </v-row>
@@ -77,10 +78,33 @@
                     </v-col>
                 </v-row>
                 <v-row>
-            <v-col cols="12" md="12">
-              <iframe id="frameEa" src="/evaluacion/preview-pdf" frameborder="1" style="width: 100%; height: 450vh;"></iframe>
-            </v-col>
-          </v-row>
+                    <v-col
+                        cols="12"
+                        md="9"
+                    >
+                    </v-col>
+
+                    <v-col
+                        cols="12"
+                        md="3"
+                    >
+                    <v-btn  block color="success" type="submit" >
+                        <v-icon
+                            left
+                            dark
+                            icon="mdi-magnify"
+                        >
+                        </v-icon>
+                            Consultar
+                    </v-btn>
+                    
+                    </v-col>
+                </v-row>
+                <v-row>
+                    <v-col cols="12" md="12">
+                    <iframe id="frameResult" src="/evaluacion/preview-pdf" frameborder="1" style="width: 100%; height: 450vh;"></iframe>
+                    </v-col>
+                </v-row>
             </v-form>
         </v-card-text>
     </v-card>
@@ -88,6 +112,7 @@
 
 <script setup>
 import useAppConfig from '@core/@app-config/useAppConfig';
+import { requiredObject } from '@core/utils/validation.js';
 import { ref } from 'vue';
 
   let { overlay } = useAppConfig()
@@ -96,12 +121,18 @@ import { ref } from 'vue';
     overlay.value = value
   }
   let isShowEntityActive = ref(false)
-  let isShowEvaluacion = ref(false)
+
+  const valid = ref(false)
+  const form = ref(null)
+
+  const validate = () => {
+   form.value.validate()
+  }
   
+  let  validators = { requiredObject}
   let entityData = ref({periodo: '202320'})
   let nrcs = ref([])
   let nrcs_lbls = ref([])
-  let nrcs_lbls2 = ref([])
   let grupos = ref([])
   
   function initialize() {
@@ -112,11 +143,11 @@ import { ref } from 'vue';
             response.data.data.forEach((element) => 
                 nrcs_lbls[element['NRC']] = element
             );
-            nrcs_lbls2.value = nrcs_lbls
+            setOverlay(false)
             //setOverlay(false)
         })
   }
-  function loadGroups(){ 
+  function loadGroups(){
     setOverlay(true)
     $http.post('/grupos/list-grupos', entityData.value)
         .then(response => {
@@ -136,13 +167,21 @@ import { ref } from 'vue';
         })
 
     }
-  function createEntityOrClose(){
-    //blankEntityData()
-    //isShowEntityActive.value = !isShowEntityActive.value
-    //isShowEvaluacion.value = !isShowEvaluacion.value
+  function onSubmit(){
+    //alert()
+    if (valid.value) {
+        setOverlay(true)
+        $http.post('evaluacion/view-pdf', entityData.value)
+            .then(response => {
+                document.getElementById('frameResult').src = '/notas_alumnos/resultado_de_notas.pdf';
+                this.overlay = false
+                setOverlay(false)
+                
+            }).catch(err =>{
+                setOverlay(false)
+            });
 
-    isShowEntityActive.value = false
-    isShowEvaluacion.value = false
+    } 
   }
   function changeNrc(){ 
     entityData.value.horario = '' + nrcs_lbls[entityData.value.nrc]['INICIO_CLASE'] + ' - a ' + nrcs_lbls[entityData.value.nrc]['FIN_CLASE']
@@ -152,7 +191,7 @@ import { ref } from 'vue';
     //console.log(nrcs)
     //console.log(nrcs_lbls2)
   }
-    onBeforeMount(() => {
-        initialize() 
-    })
+  onBeforeMount(() => { 
+    initialize() 
+  })
 </script>
