@@ -1,6 +1,6 @@
 <script setup>
 //import { useRouter } from 'vue-router'
-import VerticalNavMenu from '@layouts/components/VerticalNavMenu.vue'
+import VerticalNavMenu from '@layouts/components/VerticalNavMenu.vue';
 
 const emit = defineEmits(['customChange'])
 

@@ -22,7 +22,7 @@ class EvaluacionController extends Controller
         //dd($request['cod_curso']);
         $curso = $request['cod_curso'];
         $nrc = $request['nrc'];
-        $periodo = '202320';
+        $periodo = '202310';
         //dd($curso);
         //dd($nrc);
         //dd($periodo);
@@ -97,7 +97,7 @@ class EvaluacionController extends Controller
         $periodo = $request['periodo'];
         $nrc = $request['nrc'];
         $curso = $request['cod_curso'];
-        $periodo = '202320';
+        $periodo = '202310';
         $grupo = $request['grupo'] ?? null;
         //$nrc = '1001';
 
@@ -149,7 +149,7 @@ class EvaluacionController extends Controller
         //dd($request);
         try {
             DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_SAVE_NOTA_INDIVIDUAL(?, ?, ?, ?, ?, ?, ?)', [
-                $request->session()->get('pidm_docente'),
+                Auth()->user()->dni,
                 $request->pidm_alumno,
                 $request->nrc,
                 $request->cod_curso,
@@ -171,7 +171,7 @@ class EvaluacionController extends Controller
         //dd($request);
         try {
             DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_SAVE_NOTA_GRUPAL(?, ?, ?, ?, ?, ?, ?)', [
-                $request->session()->get('pidm_docente'),
+                Auth()->user()->dni,
                 $request->grupo,
                 $request->nrc,
                 $request->cod_curso,
@@ -182,7 +182,7 @@ class EvaluacionController extends Controller
                 //&$message
             ]);
         } catch (\Exception $e) {
-            // dd($e);
+            //dd($e);
         }
         $ret['mensaje'] = "Registro correcto";
         return response($ret, Response::HTTP_OK);
@@ -246,9 +246,14 @@ class EvaluacionController extends Controller
         $nrc = $request['nrc'];
         $curso = $request['cod_curso'];
         $grupo = $request['grupo'];
-        $dni = $request['spriden_id'];
-        $apellidos = $request['last_name'];
-        $nombres = $request['first_name'];
+        $dni = $request['spriden_id'] != "TODOS" ? $request['spriden_id'] : null;
+        $apellidos = $request['last_name'] != "TODOS" ? $request['last_name'] : null;
+        $nombres = $request['first_name'] != "TODOS" ? $request['first_name'] : null;
+        //dd($dni);
+        /*$grupo = null;
+        $dni = null;
+        $apellidos = null;
+        $nombres = null;*/
         //dd($curso);
         //dd($nrc);
         //dd($periodo);
@@ -294,7 +299,7 @@ class EvaluacionController extends Controller
                     $notas[$cont]['NUM_CRITERIO'] = "Criterio " . $fila['NUM_CRITERIO'];
                     $notas[$cont]['NOM_CRITERIO'] = $fila['NOM_CRITERIO'];
                     $notas[$cont]['DESCR_NOTA'] = $fila['DESCR_NOTA'];
-                    $notas[$cont]['NOTA'] = $fila['NOTA'];
+                    $notas[$cont]['NOTA'] = (float)$fila['NOTA'];
                     $notaTotal += (float)$fila['NOTA'];
 
                     $datos[$pidm]["NOTAS"] = $notas;
@@ -304,8 +309,16 @@ class EvaluacionController extends Controller
             }
         }
 
+        $curso = $request['curso'];
+        $nrc = $request['nrc'];
+        $horarios = $request['horario'];
+        $modalidad = $request['mod_sede'];
         $view = view('evaluacion.notas', compact(
             'datos',
+            'curso',
+            'nrc',
+            'horarios',
+            'modalidad'
         ))->render();
 
         $pdf = App::make('dompdf.wrapper');
@@ -315,14 +328,5 @@ class EvaluacionController extends Controller
         file_put_contents($this->_uploadFolder . "/" . $nombre, $pdf->output());
 
         return response([], Response::HTTP_OK);
-        /*
-        $view = view('evaluacion.notas', compact(
-            'result',
-        ))->render();
-
-        $pdf = App::make('dompdf.wrapper');
-        $pdf->loadHTML($view);
-
-        return $pdf->stream('notas_alumnos.pdf');*/
     }
 }

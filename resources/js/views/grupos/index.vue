@@ -7,17 +7,30 @@
                     class="mx-auto text-white"
                 >
                     <v-card-text>
-                        <h2 class="text-white text-center"> ¡Bienvenido(a) Juan Perez!</h2>
+                        <h2 class="text-white text-center"> ¡Bienvenido(a) {{userData.first_name}} {{userData.last_name}}!</h2>
                         <hr class="mt-4 mb-4 pl-2 pr-2">
-                        <v-icon
-                            icon="mdi-user"
-                        ></v-icon> Tu rol asignado es  
-                        
-                        <v-chip color="error" variant="flat" size="small" class="ml-2 rounded-sm" >
-                            DOCENTE
-                        </v-chip>
+                        <div v-if="userData.role_id==2">
+                            <v-icon
+                                icon="mdi-user"
+                            ></v-icon> Tu rol asignado es  
+                            
+                            <v-chip color="error" variant="flat" size="small" class="ml-2 rounded-sm" >
+                                DOCENTE
+                            </v-chip>
 
-                        <p class="mt-2">En la plataforma, se te permite añadir y editar grupos, al igual que evaluar el desempeño de los estudiantes</p>
+                            <p class="mt-2">En la plataforma, se te permite añadir y editar grupos, al igual que evaluar el desempeño de los estudiantes</p>
+                        </div>
+                        <div v-if="userData.role_id==3">
+                            <v-icon
+                                icon="mdi-user"
+                            ></v-icon> Tu rol asignado es  
+                            
+                            <v-chip color="success" variant="flat" size="small" class="ml-2 rounded-sm" >
+                                INVITADO
+                            </v-chip>
+
+                            <p class="mt-2">Dentro de la plataforma, tienes la posibilidad de asignar calificaciones y dejar comentarios a los estudiantes y a los grupos.</p>
+                        </div>
                         <hr class="mt-4 mb-4 pl-2 pr-2">
                         <v-icon
                             icon="mdi-calendar"
@@ -36,7 +49,7 @@
                                     variant="outlined"
                                     density="compact"
                                     :items="nrcs"
-                                    item-title="NRC_LBL"
+                                    item-title="NRC_CURSO"
                                     item-value="NRC"
                                     :menu-props="{ offsetY: true }"
                                     hide-details="auto"
@@ -72,7 +85,7 @@
                                 </v-col>
                             </v-row>
                             <v-row>
-                                <v-col cols="12" md="3">
+                                <v-col cols="12" md="3" v-if="userData.role_id==2">
                                     <v-btn block color="info" @click="isShowEntityActive=true" > 
                                         <v-icon
                                             left
@@ -104,14 +117,17 @@
 
     <grupos-interfaz v-if="isShowEntityActive && !isShowEvaluacion"
         :entityData="entityData"
-        @on-backward="createEntityOrClose">
+        @on-backward="createEntityOrClose"
+        @ir-eval="irEval">
     </grupos-interfaz>
 
     <evaluacion v-if="isShowEvaluacion && !isShowEntityActive"
         :entityData="entityData"
         :nrcs="nrcs"
         :nrcs_lbls="nrcs_lbls2"
-        @on-backward="createEntityOrClose">
+        :grupo_sel="grupo_sel"
+        @on-backward="createEntityOrClose"
+        >
     </evaluacion>
 </template>
 <script setup>
@@ -125,16 +141,32 @@ import gruposInterfaz from './grupos-components/gruposInterfaz.vue';
   const setOverlay = (value) => {
     overlay.value = value
   }
+  const userData = JSON.parse(localStorage.getItem('userData')) || {}
+
   let isShowEntityActive = ref(false)
   let isShowEvaluacion = ref(false)
   
-  let entityData = ref({periodo: '202320'})
+  let entityData = ref({periodo: '202310'})
   let nrcs = ref([])
   let nrcs_lbls = ref([])
   let nrcs_lbls2 = ref([])
+  let grupo_sel = ref(null)
   function initialize() {
+    //
       setOverlay(true)
-      $http.post('/grupos/list-nrcs-docente')
+      if(userData.role_id == 2){
+        $http.post('/grupos/list-nrcs-docente')
+        .then(response => {
+        //console.log(response.data.data)
+            nrcs.value = response.data.data
+            response.data.data.forEach((element) => 
+                nrcs_lbls[element['NRC']] = element
+            );
+            nrcs_lbls2.value = nrcs_lbls
+            setOverlay(false)
+        })
+      }else if(userData.role_id == 3){
+        $http.post('/grupos/list-nrcs-jurado')
         .then(response => {
             nrcs.value = response.data.data
             response.data.data.forEach((element) => 
@@ -143,6 +175,8 @@ import gruposInterfaz from './grupos-components/gruposInterfaz.vue';
             nrcs_lbls2.value = nrcs_lbls
             setOverlay(false)
         })
+      }
+
   }
 
   function createEntityOrClose(){
@@ -160,6 +194,11 @@ import gruposInterfaz from './grupos-components/gruposInterfaz.vue';
     entityData.value.cod_curso = nrcs_lbls[entityData.value.nrc]['COD_CURSO']
     //console.log(nrcs)
     //console.log(nrcs_lbls2)
+  }
+  function irEval(item){
+    isShowEvaluacion.value=true
+    isShowEntityActive.value=false
+    grupo_sel.value = item.columns.GRUPO_SOLO
   }
     onBeforeMount(() => {
         initialize() 

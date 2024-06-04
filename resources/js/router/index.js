@@ -81,6 +81,12 @@ const router = createRouter({
           beforeEnter: ifNotAuthenticated,
         },
         {
+          path: 'login-invitados',
+          name: 'login-invitados',
+          component: () => import('../views/login2.vue'),
+          beforeEnter: ifNotAuthenticated
+        },
+        {
           path: 'error-401',
           name: 'error-401',
           component: () => import('../views/notRegistered.vue'),

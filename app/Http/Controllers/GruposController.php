@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class GruposController extends Controller
@@ -11,25 +12,42 @@ class GruposController extends Controller
 
     public static function listNrcsDocente(Request $request)
     {
-        /* $page = $request['page'];
-        $itemsPerPage = $request['itemsPerPage'];
-        $init = ($page - 1) * $itemsPerPage;
-        */
-        /** Parametros */
-        //dd("aaa");
+
         $periodo = $request['periodo'];
-        $pidm = $request['pidm'];
-        $request->session()->put('pidm_docente', '72255');
-
-        //$pidm = '175380';
-        $pidm = $request->session()->get('pidm_docente');
-
-        $periodo = '202320';
+        //DNI DE PRUEBA CON NRCS = 06016500
+        $dni = Auth()->user()->dni;
+        $periodo = '202310';
+        //$dni = '10253131';
 
         $pdo = DB::connection('oracle')->getPdo();
-        $stmt = $pdo->prepare("BEGIN ISIL.SP_MEDICIONCOMP_LISTAR_NRC_X_DOCENTES(:periodo, :pidm, :cursor); END;");
+        $stmt = $pdo->prepare("BEGIN ISIL.SP_MEDICIONCOMP_LISTAR_NRC_X_DOCENTES(:periodo, :dni, :cursor); END;");
         $stmt->bindParam(':periodo', $periodo, \PDO::PARAM_STR);
-        $stmt->bindParam(':pidm', $pidm, \PDO::PARAM_STR);
+        $stmt->bindParam(':dni', $dni, \PDO::PARAM_STR);
+        $stmt->bindParam(':cursor', $cursor, \PDO::PARAM_STMT | \PDO::PARAM_INPUT_OUTPUT);
+        $stmt->execute();
+        oci_execute($cursor);
+
+        oci_fetch_all($cursor, $data, null, null, OCI_FETCHSTATEMENT_BY_ROW);
+        oci_free_statement($cursor);
+        $stmt->closeCursor();
+        return [
+            "data" => $data,
+            'rows' => count($data)
+        ];
+    }
+    public static function listNrcsJurados(Request $request)
+    {
+
+        $periodo = $request['periodo'];
+        //DNI DE PRUEBA CON NRCS = 06016500
+        $dni = Auth()->user()->dni;
+        //$dni = '09588929';
+        $periodo = '202310';
+
+        $pdo = DB::connection('oracle')->getPdo();
+        $stmt = $pdo->prepare("BEGIN ISIL.SP_MEDICIONCOMP_LISTAR_NRC_X_JURADO(:periodo, :dni, :cursor); END;");
+        $stmt->bindParam(':periodo', $periodo, \PDO::PARAM_STR);
+        $stmt->bindParam(':dni', $dni, \PDO::PARAM_STR);
         $stmt->bindParam(':cursor', $cursor, \PDO::PARAM_STMT | \PDO::PARAM_INPUT_OUTPUT);
         $stmt->execute();
         oci_execute($cursor);
@@ -54,7 +72,7 @@ class GruposController extends Controller
         $periodo = $request['periodo'];
         $nrc = $request['nrc'];
 
-        $periodo = '202320';
+        $periodo = '202310';
         //$nrc = '1001';
 
         $pdo = DB::connection('oracle')->getPdo();
@@ -68,14 +86,28 @@ class GruposController extends Controller
         oci_fetch_all($cursor, $data, null, null, OCI_FETCHSTATEMENT_BY_ROW);
         oci_free_statement($cursor);
         $stmt->closeCursor();
+
+        $grupos = [];
+        $cont = 0;
+        $grupos[$cont]['nom_grupo'] = "";
+        $grupos[$cont]['cod_grupo'] = "";
+        $cont++;
+        foreach ($data as $dato) {
+            $grupos[$cont]['nom_grupo'] = $dato['GRUPO'];
+            $grupos[$cont]['cod_grupo'] = $dato['GRUPO_SOLO'];
+            $cont++;
+        }
+
         return [
             "data" => $data,
+            "grupos" => $grupos,
             'rows' => count($data)
         ];
     }
 
     public static function listAlumnos(Request $request)
     {
+        //dd($request);
         /* $page = $request['page'];
         $itemsPerPage = $request['itemsPerPage'];
         $init = ($page - 1) * $itemsPerPage;
@@ -83,15 +115,17 @@ class GruposController extends Controller
         /** Parametros */
         $periodo = $request['periodo'];
         $nrc = $request['nrc'];
-        $periodo = '202320';
+        $periodo = '202310';
         $grupo = $request['grupo'] ?? null;
+        $dni = $request['dni'] ?? null;
         //$nrc = '1001';
 
         $pdo = DB::connection('oracle')->getPdo();
-        $stmt = $pdo->prepare("BEGIN ISIL.SP_MEDICIONCOMP_LISTAR_ALUMNOS_X_NRC(:periodo, :nrc, :grupo, :cursor); END;");
+        $stmt = $pdo->prepare("BEGIN ISIL.SP_MEDICIONCOMP_LISTAR_ALUMNOS_X_NRC(:periodo, :nrc, :grupo, :dni, :cursor); END;");
         $stmt->bindParam(':periodo', $periodo, \PDO::PARAM_STR);
         $stmt->bindParam(':nrc', $nrc, \PDO::PARAM_STR);
         $stmt->bindParam(':grupo', $grupo, \PDO::PARAM_STR);
+        $stmt->bindParam(':dni', $dni, \PDO::PARAM_STR);
         $stmt->bindParam(':cursor', $cursor, \PDO::PARAM_STMT | \PDO::PARAM_INPUT_OUTPUT);
         $stmt->execute();
         oci_execute($cursor);
@@ -100,8 +134,30 @@ class GruposController extends Controller
         oci_free_statement($cursor);
         $stmt->closeCursor();
 
+        $dnis = [];
+        $apellidos = [];
+        $nombres = [];
+        $cont = 0;
+        $dnis[$cont]['dni'] = "TODOS";
+        $apellidos[$cont]['apellido'] = "TODOS";
+        $nombres[$cont]['nombre'] = "TODOS";
+        $cont++;
+        foreach ($data as $fila) {
+            $dnis[$cont]['dni'] = $fila['DNI'];
+            $apellidos[$cont]['apellido'] = $fila['SPRIDEN_LAST_NAME'];
+            $nombres[$cont]['nombre'] = $fila['SPRIDEN_FIRST_NAME'];
+            $cont++;
+        }
+        //dd($dnis);
+        //$dnis = array_column($data, 'DNI', 'dnis');
+        //$apellidos = array_column($data, 'SPRIDEN_LAST_NAME');
+        //$nombres = array_column($data, 'SPRIDEN_FIRST_NAME');
+
         return [
             "data" => $data,
+            "dnis" => $dnis,
+            "apellidos" => $apellidos,
+            "nombres" => $nombres,
             'rows' => count($data)
         ];
     }
@@ -179,6 +235,25 @@ class GruposController extends Controller
             //dd ($e);
         }
         $ret['mensaje'] = "Se eliminó el grupo correctamente";
+        return response($ret, Response::HTTP_OK);
+    }
+
+    public static function generarGrupos(Request $request)
+    {
+        //dd($request);
+        try {
+            $status = null;
+            $message = null;
+
+            DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_CREAR_GRUPOS(?, ?, ?)', [
+                $request->num_grupos,
+                $request->nrc, // carrera
+                $request->periodo, // periodo
+            ]);
+        } catch (\Exception $e) {
+            //dd($e);
+        }
+        $ret['mensaje'] = "Se generaron los grupos correctamente";
         return response($ret, Response::HTTP_OK);
     }
 }

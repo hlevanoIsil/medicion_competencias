@@ -4,7 +4,12 @@
   background-image: url("@images/pages/group_wo2.jpg");
   background-size: cover;
 }
-
+.auth-wrapper2 {
+  min-block-size: calc(var(--vh, 1vh) * 100);
+  //min-height: calc(var(--vh, 1vh) * 100);
+  background-image: url("@images/pages/isil2.jpg");
+  background-size: cover;
+}
 .auth-footer-mask {
   position: absolute;
   inset-block-end: 0;

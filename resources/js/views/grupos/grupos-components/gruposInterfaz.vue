@@ -1,4 +1,14 @@
 <template>
+    <v-snackbar
+        color="success"
+        rounded="pill"
+        :timeout="3000"
+        v-model="showSnackbar"
+        location="right bottom"
+        elevation="24"
+    >
+        <p class="text-center mb-0 pb-0">GRUPOS GENERADOS CORRECTAMENTE</p>
+    </v-snackbar>
     <v-row>
         <v-col cols="12" md="12">
             <v-card >
@@ -61,7 +71,23 @@
                             </v-chip>
                         </v-col>
                     </v-row>
-                    <v-divider class="mb-3 mt-5" ></v-divider>
+                    <v-row class="mb-0 pb-0">
+                        <v-col cols="12" md="8" class="mb-0 pb-0"></v-col>
+                        <v-col cols="12" md="4" class="text-right mb-0 pb-0">
+                            <v-text-field
+                                label="Ingrese número de grupos"
+                                v-model="entityData.num_grupos"
+                                variant="outlined"
+                                density="compact"
+                                hide-details="auto"
+                                type="number"
+                                @keydown="generarGrupos($event)"
+                            ></v-text-field>
+                        </v-col>
+                        <v-col cols="12" md="6" class="text-right">
+                        </v-col>
+                    </v-row>
+                    <v-divider class="mb-3 mt-0" ></v-divider>
                     <v-data-table-server
                         class="mb-4 mt-0"
                         :headers="headers"
@@ -94,14 +120,14 @@
                                 <template v-slot:activator="{ props }">
                                 <v-avatar size="28" color="warning" v-bind="props">
                                     <v-icon size="15"  
-                                    @click="showDocForm(item)"
+                                    @click="showEvaForm(item)"
                                     icon="mdi-check-bold"></v-icon>
                                 </v-avatar>
                                 </template>
                             </v-tooltip>
                         </template>
 
-                        <template #[`item.GRUPO`]="{item}">
+                        <template #[`item.GRUPO`]="{item}"> 
                             <v-chip
                             small
                             density="compact"
@@ -164,9 +190,13 @@
                                     label="Ordenar estudiantes - seleccionar"
                                     outlined
                                     density="compact"
-                                    :items="[]"
+                                    v-model="entityData.dni"
+                                    :items="itemsCombo"
+                                    item-title="NOMBRES"
+                                    item-value="DNI"
                                     :menu-props="{ offsetY: true }"
                                     hide-details="auto"
+                                    @update:modelValue="listarAlumnos" 
                                 ></v-autocomplete>
                             <v-data-table-server
                                 class="mb-4 mt-2"
@@ -176,15 +206,39 @@
                                 no-data-text="No hay datos para mostrar"
                                 loading-text="Cargando..."
                             >
-                                <template #[`item.GRUPO`]="{item}">
-                                    <v-chip
-                                    small
-                                    density="compact"
-                                    :color="colorGrupos[item.value.GRUPO_SOLO]"
-                                    class="v-chip-light-bg"
-                                    >
-                                    {{ item.value.GRUPO }}
-                                    </v-chip>
+                                <template #[`item.GRUPO`]="{item}" >
+                                    <v-menu v-if="item.value.NOMBRES != 'TODOS'" >
+                                        <template v-slot:activator="{ props }">
+                                            <v-chip
+                                                small
+                                                density="compact"
+                                                :color="colorGrupos[item.value.GRUPO_SOLO]"
+                                                class="v-chip-light-bg"
+                                                v-bind="props"
+                                                >
+                                                {{ item.value.GRUPO }}
+                                            </v-chip>
+                                            <!--
+                                            <v-btn color="secondary" icon="mdi-plus-circle-outline " size="30" v-bind="props"></v-btn>-->
+                                        </template>
+                                        <v-list class="listaCal pr-3 pl-3" density="compact">                                    
+                                            <v-list-item
+                                                v-for="(grupo, x) in grupos"
+                                                :key="x"
+                                                class="m-0 p-0"
+                                            >
+
+                                                <v-list-sub-header v-if="grupo.cod_grupo === ''" ><strong>Asignar grupo</strong> </v-list-sub-header>
+                                                <v-list-item-title class="listaItem" v-if="i !== ''" @click="asignarIndividual(item.value.PIDM, grupo.cod_grupo);" ><span v-bind:title="grupo.cod_grupo" >{{ grupo.nom_grupo }}</span></v-list-item-title>
+                                            </v-list-item>
+                                        </v-list>
+                                    </v-menu>
+                                 
+                                </template>
+                                <template #[`item.NOMBRES`]="{item}" >
+                                    <slot name="cod" v-if="item.value.NOMBRES != 'TODOS'">
+                                        {{item.value.NOMBRES}}
+                                    </slot>
                                 </template>
                                 <template #[`item.DNI`]="{item}">
                                     <slot name="cod">
@@ -330,6 +384,7 @@ export default {
             3: 'error',
             4: 'warning',
             5: 'primary',
+            6: 'secondary',
         })
         let activeMsgDelete = ref(false)
         let activeMsgDelete2 = ref(false)
@@ -347,6 +402,7 @@ export default {
             { title: 'COD', key: 'DNI', filterable: true, sortable: false},
         ]
         let items2 = ref([])
+        let itemsCombo = ref([])
         let totalItems2 = ref(0)
 
         let headersPopup = [
@@ -354,11 +410,14 @@ export default {
             { title: 'DNI', key: 'DNI', filterable: true, sortable: false},
             { title: '', key: 'PIDM', filterable: true, sortable: false},
         ]
+        let grupos = ref([])
+
         let itemsPopup = ref([])
         let grupoActual = ref()
 
         let pidmDrop = ref()
         let itemGrupoDrop = ref()
+        let showSnackbar = ref(false)
         
         return {
             overlay,
@@ -370,6 +429,8 @@ export default {
             items,
             headers2,
             items2,
+            itemsCombo,
+            grupos,
             totalItems1,
             totalItems2,
             headersPopup,
@@ -381,7 +442,8 @@ export default {
             activeMsgDelete2,
             msgDelete2: '',
             pidmDrop,
-            itemGrupoDrop
+            itemGrupoDrop,
+            showSnackbar
         }
     },
     beforeMount(){
@@ -390,6 +452,7 @@ export default {
     methods: {
         initialize() {
             //console.log(this.entityData.mod_sede)
+            this.entityData.dni = ''
             this.overlay = true
             this.listarGrupos()
             this.listarAlumnos()
@@ -399,7 +462,8 @@ export default {
             this.$http.post('grupos/list-grupos', this.entityData)
                 .then(response => {
                     //console.log(response.data.data)
-                    
+                    this.grupos = response.data.grupos 
+                    //console.log(this.grupos)
                     this.items = response.data.data
                     this.totalItems1 = Number(response.data.rows) 
 
@@ -411,10 +475,17 @@ export default {
         },
         listarAlumnos(){
             this.entityData.grupo = null
+            this.overlay = true
             this.$http.post('grupos/list-alumnos', this.entityData)
                 .then(response => {
+                    //console.log(response.data.data)
                     this.items2 = response.data.data
                     this.totalItems2 = Number(response.data.rows) 
+
+                    let arrayT = response.data.data
+                    
+                    arrayT.push({DNI: '', NOMBRES: 'TODOS'});
+                    this.itemsCombo = arrayT
                     this.overlay = false
 
                     tableKey++
@@ -523,6 +594,54 @@ export default {
                     this.loadAlert(error.response.data.message)
                 })
         },
+        asignarIndividual(pidm, grupo){
+            this.overlay = true
+            this.entityData.flag = 1
+            this.entityData.grupo = grupo
+            this.entityData.pidm = pidm
+            this.$http.post('grupos/agregar-alumno', this.entityData)
+            .then(response => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                this.overlay = false
+                //this.$forceUpdate();
+                this.listarGrupos()
+                this.listarAlumnos()
+                this.entityData.pidm = null
+                this.loadAlert(response.data.mensaje, 'success', 'Éxito')
+                
+            }).catch(err =>{
+                this.overlay = false
+                if(err.response.status == 422) {                  
+                    this.loadAlert('Elegir al menos un program schedule');
+                    this.$forceUpdate();
+                } else {
+                    this.loadAlert(err.response.data.message);
+                }
+
+            });
+        },
+        generarGrupos(e){
+
+            if(e.code == "Enter"){         
+                this.overlay = true
+                
+                this.$http.post('grupos/generar-grupos', this.entityData)
+                    .then(response => {  
+                        this.entityData.num_grupos = null
+                        this.showSnackbar = true
+                        this.listarGrupos()
+                        this.listarAlumnos()
+                        this.listarAlumnosGrupo()    
+                        this.overlay = false  
+                    })
+                    .catch(error => {
+                        this.overlay = false
+                        //isLoading.value = false
+                    })
+
+            }
+        },
+
         regresar(){
             this.$emit('on-backward')
         },
@@ -539,6 +658,10 @@ export default {
             this.itemGrupoDrop = item
             this.msgDelete2 = "¿Eliminar el grupo del NRC?"
             this.activeMsgDelete2= true
+        },
+        showEvaForm(item){
+            //console.log(item)
+            this.$emit('ir-eval', item)
         },
         closeMsgDelete2(){
             //this.blankEntityData()
@@ -569,3 +692,18 @@ export default {
     }
 }
 </script>
+<style lang="scss">
+.listaCal{
+    background-color: #003045 !important;
+    color: #ffcc03 !important;
+    border-radius: 5px;
+
+}
+.listaItem{
+    background-color: #003045 !important;
+    color: #FFFFFF !important;
+    font-weight: bold;
+    cursor: pointer;
+
+}
+</style>

@@ -2,7 +2,7 @@
         <head>
             <meta http-equiv="Content-Type" content="charset=utf-8" />
             <meta charset="UTF-8">
-            <title>Enrollment Agreement</title>
+            <title>Reporte Final - Medición de Competencias</title>
             <style>
                 body{
                     font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;

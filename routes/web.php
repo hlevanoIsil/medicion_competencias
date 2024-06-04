@@ -40,6 +40,7 @@ Route::prefix('app')->group(function () {
 Route::prefix('auth')->group(function () {
 
     Route::post('login', [LoginController::class, 'login'])->name("auth.login");
+    Route::post('loginExterno', [LoginController::class, 'loginJurado']);
 });
 
 Route::group(['prefix' => 'auth', 'middleware' => 'auth:sanctum'], function () {
@@ -63,12 +64,14 @@ Route::group(['prefix' => 'system', 'middleware' => 'auth:sanctum'], function ()
 Route::group(['prefix' => 'grupos', 'middleware' => 'auth:sanctum'], function () {
 
     Route::post('list-nrcs-docente', [\App\Http\Controllers\GruposController::class, 'listNrcsDocente']);
+    Route::post('list-nrcs-jurado', [\App\Http\Controllers\GruposController::class, 'listNrcsJurados']);
     Route::post('list-grupos', [\App\Http\Controllers\GruposController::class, 'listGrupos']);
     Route::post('list-alumnos', [\App\Http\Controllers\GruposController::class, 'listAlumnos']);
 
     Route::post('agregar-alumno', [\App\Http\Controllers\GruposController::class, 'agregarAlumnos']);
     Route::post('eliminar-alumno-grupo', [\App\Http\Controllers\GruposController::class, 'eliminarAlumnoGrupo']);
     Route::post('eliminar-grupo', [\App\Http\Controllers\GruposController::class, 'eliminarGrupo']);
+    Route::post('generar-grupos', [\App\Http\Controllers\GruposController::class, 'generarGrupos']);
 });
 
 Route::group(['prefix' => 'evaluacion', 'middleware' => 'auth:sanctum'], function () {

@@ -267,7 +267,7 @@
                                         class="mb-1 mt-1"
                                         title="Presione la tecla TAB para guardar el comentario"
                                         v-bind:model-value="item['comments']"
-                                        @blur="updateCommentInd($event, item.PIDM)"
+                                        @keydown="updateCommentInd($event, item.PIDM)"
                                     ></v-textarea>
                                 </div>
                             </td>
@@ -335,11 +335,10 @@
                     label="Comentarios"
                     rows="6"
                     variant="outlined"
-                    v-model="entityData.commentGrupal"
+                    v-model="entityData.commentGrupal" 
                     shaped
                     class="mb-1 mt-1"
-                    :rules="[validators.required]"                    
-                    v-bind:model-value="coment_grupal"
+                    :rules="[validators.required]"   
                 ></v-textarea>
                 </v-col>
                 
@@ -395,7 +394,11 @@ export default {
         nrcs_lbls: {
             type: Array,
             required: true,
-        }
+        },
+        grupo_sel: {
+            type: Number,
+            required: true,
+        },
     },
     setup(){
         var { overlay } = useAppConfig()
@@ -464,7 +467,8 @@ export default {
     methods:{
         initialize() {
             this.overlay = true
-            //console.log(this.entityData.cod_curso)
+            //console.log(this.entityData)
+            
             this.cargarRubricas()
             //this.listarAlumnosGrupo()
             this.loadGroups()
@@ -477,8 +481,12 @@ export default {
             this.$http.post('evaluacion/list-rubricas-x-curso', this.entityData)
                 .then(response => {
                     //this.grupos = []
+                    
                     this.criterios = response.data.criterios
                     this.items = response.data.data
+                    if(response.data.data.length == 1){
+                        this.loadAlert('Usted no cuenta con una rúbrica de evaluación disponible, por favor contactar con el Área de Calidad Educativa');
+                    }
                     //console.log(response.data.data)
                     //this.items = response.data.data
                     //this.totalItems1 = Number(response.data.rows) 
@@ -509,7 +517,11 @@ export default {
 
                     // cambia labels
                     //console.log(this.entityData.nrc)
-
+                    //console.log(this.grupo_sel)
+                    this.entityData.grupo = this.grupo_sel
+                    if(this.grupo_sel){
+                        this.listarAlumnosGrupo()
+                    }
                     this.overlay = false
                 })
                 .catch(error => {
@@ -521,9 +533,10 @@ export default {
             //this.entityData.grupo = 1
             this.$http.post('evaluacion/list-alumnos', this.entityData)
                 .then(response => {        
-                    //console.log(response.data.data)        
+                    console.log(response.data.coment_grupal)        
                     this.itemsNot = response.data.data 
-                    this.coment_grupal = response.data.coment_grupal 
+                    //this.coment_grupal = response.data.coment_grupal 
+                    this.entityData.commentGrupal = response.data.coment_grupal 
                     //console.log(this.itemsNot)
                     //this.totalItems2 = Number(response.data.rows) 
                     this.overlay = false
@@ -575,18 +588,22 @@ export default {
                 })
         },
         updateCommentInd(e, pidm){
-            this.overlay = true
-            this.entityData.pidm_alumno = pidm
-            this.entityData.comment = e.target.value
-            
-            this.$http.post('evaluacion/comentario-save-individual', this.entityData)
-                .then(response => {  
-                    this.showSnackbarCom1 = true    
-                    this.overlay = false  
-                })
-                .catch(error => {
-                    //isLoading.value = false
-                })
+            if(e.code == "Tab"){
+        
+                this.overlay = true
+                this.entityData.pidm_alumno = pidm
+                this.entityData.comment = e.target.value
+                
+                this.$http.post('evaluacion/comentario-save-individual', this.entityData)
+                    .then(response => {  
+                        this.showSnackbarCom1 = true    
+                        this.overlay = false  
+                    })
+                    .catch(error => {
+                        //isLoading.value = false
+                    })
+
+            }
         },
         comentarioGrupal(){
             
@@ -596,9 +613,11 @@ export default {
                     .then(response => {
                         this.showSnackbarCom1 = true    
                         this.overlay = false  
+                        this.dialog = false
                         
                     }).catch(err =>{
                         this.overlay = false
+                        this.dialog = false
                     });
     
             } 
@@ -606,7 +625,14 @@ export default {
         cerrarModal(){
             this.dialog = false
         },
-
+        loadAlert(text, type="error", title="Advertencia"){
+            this.$swal.fire({
+                    title: title,
+                    text: text,
+                    icon: type,
+                    confirmButtonText: 'OK',
+                    })
+            }
     }
 }
 </script>

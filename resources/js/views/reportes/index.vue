@@ -32,51 +32,114 @@
                     ></v-autocomplete>
                     </v-col>
                     <v-col cols="12" md="6">
-                            <v-autocomplete
-                                    label="Grupos"
-                                    v-model="entityData.grupo"
-                                    variant="outlined"
-                                    density="compact"
-                                    :items="grupos"
-                                    item-title="GRUPO"
-                                    item-value="GRUPO_SOLO"
-                                    :menu-props="{ offsetY: true }"
-                                    hide-details="auto"
-                                    :rules="[validators.requiredObject]"  
-                                ></v-autocomplete>
-                        </v-col>
+                        <v-autocomplete
+                                label="Grupos"
+                                v-model="entityData.grupo"
+                                variant="outlined"
+                                density="compact"
+                                :items="grupos"
+                                item-title="GRUPO"
+                                item-value="GRUPO_SOLO"
+                                :menu-props="{ offsetY: true }"
+                                hide-details="auto"
+                                :rules="[validators.requiredObject]"                                    
+                                @update:modelValue="listarAlumnos"
+                            ></v-autocomplete>
+                    </v-col>
                 </v-row>
                 <v-row>
                     <v-col cols="12" md="4">
+                        <v-autocomplete
+                            label="DNI'S"
+                            v-model="entityData.spriden_id"
+                            variant="outlined"
+                            density="compact"
+                            :items="dnis"
+                            item-title="dni"
+                            item-value="dni"
+                            :menu-props="{ offsetY: true }"
+                            hide-details="auto"
+                            :rules="[validators.requiredObject]"     
+                        ></v-autocomplete>
+                        <!-- 
                         <v-text-field
                             label="ID"
                             v-model="entityData.spriden_id"
                             variant="outlined"
                             density="compact"
                             hide-details="auto"
-                        ></v-text-field>
+                        ></v-text-field>-->
                     </v-col>
                     
                     <v-col cols="12" md="4">
+                        <v-autocomplete
+                            label="Apellidos"
+                            v-model="entityData.last_name"
+                            variant="outlined"
+                            density="compact"
+                            :items="apellidos"
+                            item-title="apellido"
+                            item-value="apellido"
+                            :menu-props="{ offsetY: true }"
+                            hide-details="auto"
+                            :rules="[validators.requiredObject]"     
+                        ></v-autocomplete>
+                        <!--
                         <v-text-field
                             label="Apellidos"
                             v-model="entityData.last_name"
                             variant="outlined"
                             density="compact"
                             hide-details="auto"
-                        ></v-text-field>
+                        ></v-text-field>-->
                     </v-col>
                     
                     <v-col cols="12" md="4">
+                        <v-autocomplete
+                            label="Nombres"
+                            v-model="entityData.first_name"
+                            variant="outlined"
+                            density="compact"
+                            :items="nombres"
+                            item-title="nombre"
+                            item-value="nombre"
+                            :menu-props="{ offsetY: true }"
+                            hide-details="auto"
+                            :rules="[validators.requiredObject]"     
+                        ></v-autocomplete>
+                        <!--
                         <v-text-field
                             label="Nombres"
                             v-model="entityData.first_name"
                             variant="outlined"
                             density="compact"
                             hide-details="auto"
-                        ></v-text-field>
+                        ></v-text-field>-->
                     </v-col>
                 </v-row>
+                <v-divider class="mb-5 mt-5" ></v-divider>
+                    <v-row>
+                        <v-col cols="12" md="5">
+                            NOMBRE DEL CURSO: <br>
+                            <strong>{{entityData.curso}}</strong>
+                        </v-col>
+                        <v-divider vertical></v-divider>
+                        <v-col cols="12" md="1">
+                            COD CURSO: <br>
+                            <strong>{{entityData.cod_curso}}</strong>
+                        </v-col>
+                        <v-divider vertical></v-divider>
+                        <v-col cols="12" md="2">
+                            HORARIOS: <br>
+                            <strong>{{entityData.horario}}</strong>
+                        </v-col>
+                        <v-divider vertical></v-divider>
+                        <v-col cols="12" md="3">
+                            MODALIDAD: <br>
+                            <strong>{{entityData.mod_sede}}</strong>
+                        </v-col>    
+                    </v-row>
+                    <v-divider class="mb-5 mt-5" ></v-divider>
                 <v-row>
                     <v-col
                         cols="12"
@@ -130,10 +193,14 @@ import { ref } from 'vue';
   }
   
   let  validators = { requiredObject}
-  let entityData = ref({periodo: '202320'})
+  let entityData = ref({periodo: '202310', spriden_id:'TODOS', first_name:'TODOS', last_name:'TODOS'})
   let nrcs = ref([])
   let nrcs_lbls = ref([])
   let grupos = ref([])
+
+  let dnis = ref([])
+  let nombres = ref([])
+  let apellidos = ref([])
   
   function initialize() {
       setOverlay(true)
@@ -151,21 +218,38 @@ import { ref } from 'vue';
     setOverlay(true)
     $http.post('/grupos/list-grupos', entityData.value)
         .then(response => {
-            
+            response.data.data.push({GRUPO_SOLO: '', GRUPO: 'TODOS'});
             entityData.value.horario = '' + nrcs_lbls[entityData.value.nrc]['INICIO_CLASE'] + ' - a ' + nrcs_lbls[entityData.value.nrc]['FIN_CLASE']
             entityData.value.mod_sede = nrcs_lbls[entityData.value.nrc]['MODALIDAD'] + ' - ' + nrcs_lbls[entityData.value.nrc]['SEDE']
             entityData.value.curso = nrcs_lbls[entityData.value.nrc]['CURSO']
             entityData.value.cod_curso = nrcs_lbls[entityData.value.nrc]['COD_CURSO']
         
-            response.data.data.push({GRUPO_SOLO: '', GRUPO: 'Elegir grupo'});
+            
             entityData.value.grupo = ''
             grupos.value = response.data.data
             // cambia labels
             //console.log(this.entityData.nrc)
-            
+            listarAlumnos()
             setOverlay(false)
         })
 
+    }
+  function listarAlumnos(){
+        //entityData.value.grupo = null
+        entityData.value.dni = null
+        setOverlay(true)
+        $http.post('grupos/list-alumnos', entityData.value)
+            .then(response => {
+                //console.log(response.data.dnis)
+                setOverlay(false)
+                dnis.value = response.data.dnis
+                apellidos.value = response.data.apellidos
+                nombres.value = response.data.nombres
+                tableKey++
+            })
+            .catch(error => {
+                //isLoading.value = false
+            })
     }
   function onSubmit(){
     //alert()

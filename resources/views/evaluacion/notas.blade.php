@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="charset=utf-8" />
     <meta charset="UTF-8">
-    <title>Enrollment Agreement</title>
+    <title>Reporte Final - Medición de Competencias</title>
     <style>
         body {
             font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
@@ -126,6 +126,29 @@
             </td>
         </tr>
     </table>
+
+    <table width="100%" cellpading=0 cellspacing=0 border=0>
+        <tr>
+            <td >NOMBRE DEL CURSO</td>
+            <td >
+                NRC
+            </td>
+            <td>
+                HORARIOS
+            </td>
+            <td>
+                MODALIDAD
+            </td>
+        </tr>
+        <tr>
+            <td ><strong>{{$curso}}</strong> </td>
+            <td ><strong>{{$nrc}}</strong> </td>
+            <td ><strong>{{$horarios}}</strong> </td>
+            <td ><strong>{{$modalidad}}</strong> </td>
+
+        </tr>
+    </table>
+<br><br>
     @foreach ($datos as $dato)
         <table cellspacing=0 cellpadding=0 width="100%">
             <tr>
@@ -185,6 +208,7 @@
             </tr>
         </table> 
         @endif
+        <div class="page-break"></div><br>
         <br><br><br>
     @endforeach
 

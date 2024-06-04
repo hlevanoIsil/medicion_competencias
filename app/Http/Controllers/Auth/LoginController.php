@@ -13,13 +13,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\DB;
+use hash;
 
 class LoginController extends Controller
 {
 
     public function callbackLogin(Request $request)
     {
-
         $user = Socialite::driver('saml2')->stateless()->user(); //->stateless()
 
         //dd($user);
@@ -54,7 +54,7 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
-
+        //dd("aaaa");
         $userExists = User::where('dni', $request['id'])->first();
 
         if (is_null($userExists)) {
@@ -109,11 +109,47 @@ class LoginController extends Controller
         $response = ['message' => 'You have been successfully logged out!'];
         return response($response, 200);
     }
+    /*public function username()
+    {
+        return 'dni';
+    }*/
+    public function loginJurado(Request $request)
+    {
+
+        $userExists = User::where('dni', $request['id'])
+            ->where('password', hash('sha256', $request['password']))
+            ->first();
+        //dd($userExists);
+        if ($userExists) {
+
+            $token = $userExists->createToken("auth_token")->plainTextToken;
+            //return redirect($_ENV["APP_URL"] . "/login/" . $userExists->dni . "/" . $token);
+            $response = [
+                'token' => $token,
+                'dni' =>  $userExists->dni,
+                'message' => 'Autorizado'
+            ];
+            return response($response, Response::HTTP_OK);
+        } else {
+            $response = [
+                'token' => null,
+                'dni' =>  null,
+                'message' => 'No Autorizado'
+            ];
+            return response($response, Response::HTTP_OK);
+        }
+
+        //return redirect($_ENV["APP_URL"] . "/app/logout");
+    }
 
     public function unauthorized(Request $request)
     {
         //return response()->json(['error' => 'No Autorizado'], 401);
-        $response = ['message' => 'No Autorizado'];
+        $response = [
+            'token' => null,
+            'user' =>  null,
+            'message' => 'No Autorizado'
+        ];
         return response($response, Response::HTTP_UNAUTHORIZED);
     }
 }

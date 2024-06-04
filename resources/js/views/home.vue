@@ -11,7 +11,7 @@
               <span class="text-h6">🥳</span>
             </v-card-text>
             <v-card-text class="text-2xl font-weight-bold py-10 text-right" >
-              <span class="flex-nowrap text-primary text-h5 "> {{userData.first_name}} </span>
+              <span class="flex-nowrap text-primary text-h5 "> {{userData.first_name}} {{userData.last_name}} </span>
             </v-card-text>
           </v-col>
           <v-col cols="4" sm="4">
@@ -36,15 +36,15 @@
 </template>
 <script setup>
 
-import useAppConfig from '@core/@app-config/useAppConfig'
-import avatar from '@images/avatars/pose-f-39.png'
-import triangleDark from '@images/misc/triangle-dark.png'
-import triangleLight from '@images/misc/triangle-light.png'
+import useAppConfig from '@core/@app-config/useAppConfig';
+import avatar from '@images/avatars/pose-f-39.png';
+import triangleDark from '@images/misc/triangle-dark.png';
+import triangleLight from '@images/misc/triangle-light.png';
+import { useTheme } from 'vuetify';
 
 const userData = JSON.parse(localStorage.getItem('userData'))
 const userMenu = JSON.parse(localStorage.getItem('userMenu'))
 var { overlay } = useAppConfig()
-import { useTheme } from 'vuetify'
 
 const { global } = useTheme()
 const triangleBg = computed(() => global.name.value === 'light' ? triangleLight : triangleDark)

@@ -1,13 +1,8 @@
 <script setup>
-import { useTheme } from 'vuetify'
-import logo from '@images/logo.svg?raw'
-import authV1MaskDark from '@images/pages/auth-v1-mask-dark.png'
-import authV1MaskLight from '@images/pages/auth-v1-mask-light.png'
-import authV1Tree2 from '@images/pages/auth-v1-tree-2.png'
-import authV1Tree from '@images/pages/auth-v1-tree.png'
-import { useRoute, useRouter } from 'vue-router'
-import store from '@/store'
-import { onMounted } from 'vue'
+import store from '@/store';
+import { onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useTheme } from 'vuetify';
 
 const vuetifyTheme = useTheme()
 const route = useRoute()
@@ -67,6 +62,7 @@ onMounted(() => {
         <h5 class="text-h5 font-weight-bold mb-1 text-center text-black">
           ISIL
         </h5>
+        <p class="text-center mb-0 pb-0"> <strong>Ingresar como:</strong></p>
       </VCardText>
 
       <VCardText>
@@ -78,11 +74,22 @@ onMounted(() => {
                 type="submit"
                 href="/app/redirect" 
                 :loading="loading"
-              >
-                Ingresar
+              ><v-icon icon="mdi-user"></v-icon> 
+                Usuario ISIL
               </VBtn>
             </VCol>
-
+          </VRow>
+          <VRow> 
+            <VCol cols="12">
+              <VBtn
+                block
+                type="submit"
+                href="/login-invitados" 
+                :loading="loading"
+              ><v-icon icon="mdi-user"></v-icon> 
+                Invitado
+              </VBtn>
+            </VCol>
           </VRow>
         </VForm>
       </VCardText>

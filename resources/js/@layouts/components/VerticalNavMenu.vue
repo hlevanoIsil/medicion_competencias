@@ -1,6 +1,6 @@
 <script setup>
-import VerticalNavMenuGroup from '@/@layouts/components/VerticalNavMenuGroup.vue'
-import VerticalNavLink from '@/@layouts/components/VerticalNavLink.vue'
+import VerticalNavLink from '@/@layouts/components/VerticalNavLink.vue';
+import VerticalNavMenuGroup from '@/@layouts/components/VerticalNavMenuGroup.vue';
 const emit = defineEmits(['customChangeNav'])
 
 const props = defineProps({
