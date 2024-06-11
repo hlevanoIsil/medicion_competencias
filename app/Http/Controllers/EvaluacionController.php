@@ -293,8 +293,10 @@ class EvaluacionController extends Controller
 
                 if ($fila['SPRIDEN_PIDM'] == $pidm) {
                     $datos[$pidm]["NOMBRES"] = $fila['FULLNAME'];
+                    $datos[$pidm]["DOCENTE"] = $fila['FULLNAME_DOCENTE'];
                     $datos[$pidm]["GRUPO"] = $fila['GRUPO_NUM'];
                     $datos[$pidm]["COMENTARIOS"] = $fila['COMENTARIOS'];
+                    $datos[$pidm]["COMENTARIO_GRUPAL"] = $fila['COMENTARIO_GRUPAL'];
 
                     $notas[$cont]['NUM_CRITERIO'] = "Criterio " . $fila['NUM_CRITERIO'];
                     $notas[$cont]['NOM_CRITERIO'] = $fila['NOM_CRITERIO'];
@@ -308,7 +310,7 @@ class EvaluacionController extends Controller
                 }
             }
         }
-
+        //dd($datos);
         $curso = $request['curso'];
         $nrc = $request['nrc'];
         $horarios = $request['horario'];

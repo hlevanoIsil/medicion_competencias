@@ -9,6 +9,16 @@
     >
         <p class="text-center mb-0 pb-0">GRUPOS GENERADOS CORRECTAMENTE</p>
     </v-snackbar>
+    <v-snackbar
+        color="error"
+        rounded="pill"
+        :timeout="3000"
+        v-model="showSnackbarErr"
+        location="right bottom"
+        elevation="24"
+    >
+        <p class="text-center mb-0 pb-0">{{msjeError}}</p>
+    </v-snackbar>
     <v-row>
         <v-col cols="12" md="12">
             <v-card >
@@ -80,7 +90,8 @@
                                 variant="outlined"
                                 density="compact"
                                 hide-details="auto"
-                                type="number"
+                                @keyup="mayorMenor($event)"
+                                @keypress="onlyNumberKey($event)"
                                 @keydown="generarGrupos($event)"
                             ></v-text-field>
                         </v-col>
@@ -187,17 +198,35 @@
                     <v-row>
                         <v-col>
                             <v-autocomplete
-                                    label="Ordenar estudiantes - seleccionar"
-                                    outlined
-                                    density="compact"
-                                    v-model="entityData.dni"
-                                    :items="itemsCombo"
-                                    item-title="NOMBRES"
-                                    item-value="DNI"
-                                    :menu-props="{ offsetY: true }"
-                                    hide-details="auto"
-                                    @update:modelValue="listarAlumnos" 
-                                ></v-autocomplete>
+                                label="Seleccionar estudiante"
+                                outlined
+                                density="compact"
+                                v-model="entityData.dni"
+                                :items="itemsCombo"
+                                item-title="NOMBRES"
+                                item-value="DNI"
+                                :menu-props="{ offsetY: true }"
+                                hide-details="auto"
+                                @update:modelValue="listarAlumnos" 
+                            ></v-autocomplete>
+                        </v-col>
+                    </v-row>
+                    <v-row v-if="selected.length > 0 ">
+                        <v-col>
+                            <v-select
+                                label="Asignar grupo para los seleccionados"
+                                outlined
+                                v-model="entityData.grupo_masivo"
+                                density="compact"
+                                :items="grupos_mas"
+                                item-title="title"
+                                item-value="id"
+                                :menu-props="{ offsetY: true }"
+                                hide-details="auto"
+                                @update:modelValue="asignarMasivo"
+                            ></v-select>
+                        </v-col>
+                    </v-row>
                             <v-data-table-server
                                 class="mb-4 mt-2"
                                 :headers="headers2"
@@ -205,7 +234,15 @@
                                 density="compact"
                                 no-data-text="No hay datos para mostrar"
                                 loading-text="Cargando..."
+                                v-model="selected"
+                                show-select
                             >
+                            <!-- 
+                                <template #[`item.PIDM`]="{item}" >
+                                    <slot name="cod" v-if="item.value.NOMBRES != 'TODOS'">
+                                        {{item.value.PIDM}}
+                                    </slot>
+                                </template>-->
                                 <template #[`item.GRUPO`]="{item}" >
                                     <v-menu v-if="item.value.NOMBRES != 'TODOS'" >
                                         <template v-slot:activator="{ props }">
@@ -247,8 +284,7 @@
                                 </template>
                             <template v-slot:bottom></template>
                             </v-data-table-server>
-                        </v-col>
-                    </v-row>
+                        
                 </v-card-text>
             </v-card>
         </v-col>
@@ -257,11 +293,12 @@
     <v-dialog
       v-model="dialog"
       max-width="600"
+      persistent
     >
 
       <v-card
         prepend-icon="mdi-account"
-        v-bind:title="'Grupo' + grupoActual"
+        v-bind:title="'Grupo ' + grupoActual"
       >
         <v-card-text>
             <v-form ref="form"
@@ -357,13 +394,15 @@
 import UCDialogQuestion from '@/components/UCDialogQuestion.vue';
 import useAppConfig from '@core/@app-config/useAppConfig';
 import { required, requiredObject } from '@core/utils/validation.js';
+
 import { ref } from 'vue';
 export default {
     components: {
-        UCDialogQuestion
+        UCDialogQuestion,
     },
     data: () => ({
       dialog: false,
+      selected: []
     }),
     props: {
         entityData: {
@@ -385,6 +424,7 @@ export default {
             4: 'warning',
             5: 'primary',
             6: 'secondary',
+            7: '#0022ff',
         })
         let activeMsgDelete = ref(false)
         let activeMsgDelete2 = ref(false)
@@ -397,6 +437,7 @@ export default {
         let totalItems1 = ref(0)
 
         let headers2 = [
+            //{ title: 'SEL', key: 'PIDM', filterable: true, sortable: false},
             { title: 'GRUPO', key: 'GRUPO', filterable: true , width: 85, sortable: false},
             { title: 'NOMBRES', key: 'NOMBRES', filterable: true, sortable: false},
             { title: 'COD', key: 'DNI', filterable: true, sortable: false},
@@ -411,6 +452,8 @@ export default {
             { title: '', key: 'PIDM', filterable: true, sortable: false},
         ]
         let grupos = ref([])
+        let grupos_mas = ref([])
+        let elegidos = ref([])
 
         let itemsPopup = ref([])
         let grupoActual = ref()
@@ -418,6 +461,8 @@ export default {
         let pidmDrop = ref()
         let itemGrupoDrop = ref()
         let showSnackbar = ref(false)
+        let showSnackbarErr = ref(false)
+        let msjeError = ref(null)
         
         return {
             overlay,
@@ -431,6 +476,8 @@ export default {
             items2,
             itemsCombo,
             grupos,
+            grupos_mas,
+            elegidos,
             totalItems1,
             totalItems2,
             headersPopup,
@@ -443,7 +490,9 @@ export default {
             msgDelete2: '',
             pidmDrop,
             itemGrupoDrop,
-            showSnackbar
+            showSnackbar,
+            showSnackbarErr,
+            msjeError
         }
     },
     beforeMount(){
@@ -451,7 +500,6 @@ export default {
     },
     methods: {
         initialize() {
-            //console.log(this.entityData.mod_sede)
             this.entityData.dni = ''
             this.overlay = true
             this.listarGrupos()
@@ -463,10 +511,21 @@ export default {
                 .then(response => {
                     //console.log(response.data.data)
                     this.grupos = response.data.grupos 
+                    
                     //console.log(this.grupos)
                     this.items = response.data.data
                     this.totalItems1 = Number(response.data.rows) 
 
+                    var data = []
+                    response.data.data.forEach( function(valor) {
+                        //var _data = []
+                        //_data=[{id: valor.GRUPO_SOLO, title: valor.GRUPO}]
+                        //console.log(_data)
+                        data.push({id: valor.GRUPO_SOLO, title: valor.GRUPO});
+                    });
+                    //console.log(data);
+                    this.grupos_mas = data
+                    //this.grupos_mas = response.data.grupos 
                     tableKey++
                 })
                 .catch(error => {
@@ -478,13 +537,14 @@ export default {
             this.overlay = true
             this.$http.post('grupos/list-alumnos', this.entityData)
                 .then(response => {
-                    //console.log(response.data.data)
                     this.items2 = response.data.data
                     this.totalItems2 = Number(response.data.rows) 
 
-                    let arrayT = response.data.data
-                    
-                    arrayT.push({DNI: '', NOMBRES: 'TODOS'});
+                    let arrayT = [{DNI: '', NOMBRES: 'TODOS'}];
+                    response.data.data.forEach( function(valor) {
+                        arrayT.push({DNI: valor.DNI, NOMBRES: valor.NOMBRES});
+                    });
+
                     this.itemsCombo = arrayT
                     this.overlay = false
 
@@ -543,7 +603,7 @@ export default {
                     }).catch(err =>{
                         this.overlay = false
                         if(err.response.status == 422) {                  
-                            this.loadAlert('Elegir al menos un program schedule');
+                            this.loadAlert('Error de servidor');
                             this.$forceUpdate();
                         } else {
                             this.loadAlert(err.response.data.message);
@@ -612,7 +672,7 @@ export default {
             }).catch(err =>{
                 this.overlay = false
                 if(err.response.status == 422) {                  
-                    this.loadAlert('Elegir al menos un program schedule');
+                    this.loadAlert('Error de servidor');
                     this.$forceUpdate();
                 } else {
                     this.loadAlert(err.response.data.message);
@@ -628,15 +688,15 @@ export default {
                 this.$http.post('grupos/generar-grupos', this.entityData)
                     .then(response => {  
                         this.entityData.num_grupos = null
-                        this.showSnackbar = true
-                        this.listarGrupos()
-                        this.listarAlumnos()
+                        this.showSnackbar = true 
+                        this.listarGrupos()                        
                         this.listarAlumnosGrupo()    
-                        this.overlay = false  
+                        this.listarAlumnos()
+                        //this.overlay = false  
                     })
                     .catch(error => {
+                        this.loadAlert(error.response.data.msj ?? error.response.data.errors.file[0], 'error')
                         this.overlay = false
-                        //isLoading.value = false
                     })
 
             }
@@ -673,6 +733,54 @@ export default {
             this.listarGrupos()
             this.listarAlumnos()
         },
+        asignarMasivo(){
+            var data = []
+
+            this.selected.forEach( function(valor, indice, array) {
+                data.push({pidm: valor.PIDM});
+            });
+            //// envia
+            this.overlay = true
+            this.entityData.elegidos = data
+            this.$http.post('grupos/agregar-grupo-masivo', this.entityData)
+            .then(response => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                this.overlay = false
+                //this.$forceUpdate();
+                this.listarGrupos()
+                this.listarAlumnos()
+                this.entityData.pidm = null
+                this.loadAlert(response.data.mensaje, 'success', 'Éxito')
+                this.entityData.grupo_masivo = null
+                this.selected = []
+                
+            }).catch(err =>{
+                this.overlay = false
+                if(err.response.status == 422) {                  
+                    this.loadAlert('Error de servidor');
+                    this.$forceUpdate();
+                } else {
+                    this.loadAlert(err.response.data.message);
+                }
+
+            });
+        },
+
+        onlyNumberKey(e) {// alert("s")      
+            if(e.which != 8 && isNaN(String.fromCharCode(e.which))){
+                this.entityData.num_grupos = ''
+                e.preventDefault();
+            }
+            
+        }, 
+        mayorMenor(e){
+            if(this.entityData.num_grupos > 8 || this.entityData.num_grupos < 2){
+                this.showSnackbarErr = true
+                this.msjeError = "El número de grupos a crear debe ser un dígito entre 2 y 8"
+                this.entityData.num_grupos = ''
+                e.preventDefault();
+            }
+        },
         loadAlert(text, type="error", title="Advertencia"){
         //this.$store.commit('appConfig/TOGGLE_SNACKBAR', {show: true, text: text, color: type})
             this.$swal.fire({
@@ -706,4 +814,7 @@ export default {
     cursor: pointer;
 
 }
+.v-overlay__content{
+  z-index: 999999 !important;
+ }
 </style>

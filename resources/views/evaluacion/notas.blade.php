@@ -18,7 +18,11 @@
             padding-top: 5px;
             padding-bottom: 7px;
         }
-
+        tdHead{
+            font-size: 12px;
+            padding-top: 3px;
+            padding-bottom: 3px;
+        }
         .tdBorderB{
             border-bottom: 1px solid #9c9c9c !important;
         }
@@ -111,45 +115,55 @@
 </head>
 
 <body>
-    <table width="100%" cellpading=0 cellspacing=0 border=0>
-        <tr>
-            <td class="titulo"><strong>MEDICIÓN DE COMPETENCIAS</strong></td>
-            <td align="right">
-                <img class="logo" src="images/logo_isil.png" alt="">
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2" class="txtCenter">
-                <br>
-                <span><strong>REPORTE FINAL</strong></span><br>
-                <br>
-            </td>
-        </tr>
-    </table>
-
-    <table width="100%" cellpading=0 cellspacing=0 border=0>
-        <tr>
-            <td >NOMBRE DEL CURSO</td>
-            <td >
-                NRC
-            </td>
-            <td>
-                HORARIOS
-            </td>
-            <td>
-                MODALIDAD
-            </td>
-        </tr>
-        <tr>
-            <td ><strong>{{$curso}}</strong> </td>
-            <td ><strong>{{$nrc}}</strong> </td>
-            <td ><strong>{{$horarios}}</strong> </td>
-            <td ><strong>{{$modalidad}}</strong> </td>
-
-        </tr>
-    </table>
-<br><br>
+    @php
+        $num = 0;
+    @endphp
     @foreach ($datos as $dato)
+        @php
+            $num++;
+        @endphp
+        <table width="100%" cellpading=0 cellspacing=0 border=0>
+            <tr>
+                <td class="titulo"><strong>MEDICIÓN DE COMPETENCIAS</strong></td>
+                <td align="right">
+                    <img class="logo" src="images/logo_isil.png" alt="">
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" class="txtCenter">
+                    <br>
+                    <span><strong>REPORTE FINAL</strong></span><br>
+                    <br>
+                </td>
+            </tr>
+        </table>
+
+        <table width="100%" cellpading=0 cellspacing=0 border=0>
+            <tr>
+                <td class="tdHead">NOMBRE DEL CURSO</td>
+                <td class="tdHead">
+                    NRC
+                </td>
+                <td class="tdHead">
+                    HORARIOS
+                </td>
+                <td class="tdHead">
+                    MODALIDAD
+                </td>
+            </tr>
+            <tr>
+                <td class="tdHead"><strong>{{$curso}}</strong> </td>
+                <td class="tdHead"><strong>{{$nrc}}</strong> </td>
+                <td class="tdHead"><strong>{{$horarios}}</strong> </td>
+                <td class="tdHead"><strong>{{$modalidad}}</strong> </td>
+            </tr>
+            <tr>
+                <td class="tdHead" colspan="4">DOCENTE: <strong>{{$dato['DOCENTE']}}</strong></td>
+            </tr>
+
+        </table>
+
+        <br>
         <table cellspacing=0 cellpadding=0 width="100%">
             <tr>
                 <td width="8%" >
@@ -168,13 +182,13 @@
         </table>
         <table  cellspacing=0 cellpadding=0 width="100%">
             <tr>
-                <td class="subtitulo tdBorderB">
+                <td class="subtitulo tdBorderB" align="center">
                     Criterio
                 </td>
-                <td class="subtitulo tdBorderB">
+                <td class="subtitulo tdBorderB" align="center">
                     Puntaje obtenido
                 </td>
-                <td class="subtitulo tdBorderB">
+                <td class="subtitulo tdBorderB" align="center">
                     Descripción
                 </td>
             </tr>
@@ -188,28 +202,45 @@
                     <td class="tdBorderB txtCenter" style="padding-left: 3px; padding-right: 3px;">
                         {{$nota['NOTA']}} puntos
                     </td>
-                    <td class="tdBorderB">
+                    <td class="tdBorderB" style="padding-left: 10px">
                         {{$nota['DESCR_NOTA']}}
                     </td>
                 </tr>
             @endforeach
         </table>
         @if ($dato['COMENTARIOS'] != '')
+        <br>
         <table  cellspacing=0 cellpadding=0 width="100%">
             <tr>
                 <td class="subtitulo">
-                    Comentario:
+                    Comentario Individual:
                 </td>
             </tr>
             <tr>
                 <td class="cajaBgAzul">
-                    {{$dato['COMENTARIOS']}}
+                    {!! nl2br($dato['COMENTARIOS']) !!}
                 </td>
             </tr>
         </table> 
         @endif
-        <div class="page-break"></div><br>
-        <br><br><br>
+        @if ($dato['COMENTARIO_GRUPAL'] != '')
+        <br>
+        <table  cellspacing=0 cellpadding=0 width="100%">
+            <tr>
+                <td class="subtitulo">
+                    Comentario Grupal:
+                </td>
+            </tr>
+            <tr>
+                <td class="cajaBgAzul">
+                    {!! nl2br($dato['COMENTARIO_GRUPAL']) !!}
+                </td>
+            </tr>
+        </table> 
+        @endif
+        @if ($num<count($datos))
+            <div class="page-break"></div>
+        @endif
     @endforeach
 
 </body>

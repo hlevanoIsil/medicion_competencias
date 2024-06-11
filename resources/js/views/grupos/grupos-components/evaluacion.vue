@@ -398,6 +398,7 @@ export default {
         grupo_sel: {
             type: Number,
             required: true,
+            default: null
         },
     },
     setup(){
@@ -468,7 +469,7 @@ export default {
         initialize() {
             this.overlay = true
             //console.log(this.entityData)
-            
+            this.entityData.grupo  = null
             this.cargarRubricas()
             //this.listarAlumnosGrupo()
             this.loadGroups()
@@ -486,6 +487,16 @@ export default {
                     this.items = response.data.data
                     if(response.data.data.length == 1){
                         this.loadAlert('Usted no cuenta con una rúbrica de evaluación disponible, por favor contactar con el Área de Calidad Educativa');
+                        this.$swal.fire({
+                            title: 'Advertencia',
+                            text: "Usted no cuenta con una rúbrica de evaluación disponible, por favor contactar con el Área de Calidad Educativa",
+                            icon: "warning",
+                            confirmButtonText: 'OK',
+                        }).then((result) => {
+                        if (result.isConfirmed) {
+                            this.regresar()
+                        }
+                        })
                     }
                     //console.log(response.data.data)
                     //this.items = response.data.data
@@ -505,11 +516,11 @@ export default {
             this.$http.post('grupos/list-grupos', this.entityData)
                 .then(response => {
                     //console.log(response.data.data) 
-                    this.entityData.horario = '' + this.nrcs_lbls[this.entityData.nrc]['INICIO_CLASE'] + ' - a ' + this.nrcs_lbls[this.entityData.nrc]['FIN_CLASE']
-                    this.entityData.mod_sede = this.nrcs_lbls[this.entityData.nrc]['MODALIDAD'] + ' - ' + this.nrcs_lbls[this.entityData.nrc]['SEDE']
+                    this.entityData.horario = '' + this.nrcs_lbls[this.entityData.nrc]['INICIO_CLASE'] + ' - ' + this.nrcs_lbls[this.entityData.nrc]['FIN_CLASE']
+                    this.entityData.mod_sede = this.nrcs_lbls[this.entityData.nrc]['MODALIDAD'] + ((this.nrcs_lbls[this.entityData.nrc]['SEDE']) ? (' - ' + this.nrcs_lbls[this.entityData.nrc]['SEDE']) : '')
                     this.entityData.curso = this.nrcs_lbls[this.entityData.nrc]['CURSO']
                     this.entityData.cod_curso = this.nrcs_lbls[this.entityData.nrc]['COD_CURSO']
-                    this.cargarRubricas()
+                    //this.cargarRubricas()
                     response.data.data.push({GRUPO_SOLO: '', GRUPO: 'Elegir grupo'});
                     this.entityData.grupo = ''
                     this.grupos = response.data.data
@@ -518,17 +529,23 @@ export default {
                     // cambia labels
                     //console.log(this.entityData.nrc)
                     //console.log(this.grupo_sel)
-                    this.entityData.grupo = this.grupo_sel
+                    this.overlay = false
+                    this.entityData.grupo = this.grupo_sel ?? ''
                     if(this.grupo_sel){
+                        //this.overlay = true
                         this.listarAlumnosGrupo()
                     }
-                    this.overlay = false
+                    
                 })
                 .catch(error => {
                     //isLoading.value = false
                 })
         },
         listarAlumnosGrupo(){
+            if(this.entityData.grupo == ''){
+                return
+            }
+            
             this.overlay = true 
             //this.entityData.grupo = 1
             this.$http.post('evaluacion/list-alumnos', this.entityData)

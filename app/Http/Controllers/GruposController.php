@@ -189,6 +189,36 @@ class GruposController extends Controller
         return response($ret, Response::HTTP_OK);
     }
 
+    public static function agregarMasivo(Request $request)
+    {
+        //dd($request->nrc);
+        foreach ($request['elegidos'] as $pidm) {
+            //dd($pidm['pidm']);
+            try {
+                $status = null;
+                $message = null;
+
+                //$lang = $request->language == 'E' ? 1 : 2;
+                $lang = $request->language == 2;
+
+
+                DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_AGREGAR_ALUMNO_GRUPO(?, ?, ?, ?, ?)', [
+                    $request->grupo_masivo,
+                    $request->nrc, // carrera
+                    $request->periodo, // periodo
+                    $pidm['pidm'],
+                    1
+                    //&$status,
+                    //&$message
+                ]);
+            } catch (\Exception $e) {
+                //dd ($e);
+            }
+        }
+        $ret['mensaje'] = "Se agregaron los estudiantes al grupo seleccionado correctamente";
+        return response($ret, Response::HTTP_OK);
+    }
+
     public static function eliminarAlumnoGrupo(Request $request)
     {
         //dd($request);
@@ -240,7 +270,9 @@ class GruposController extends Controller
 
     public static function generarGrupos(Request $request)
     {
-        //dd($request);
+        if ((int)$request['num_grupos'] < 2 || (int)$request['num_grupos'] > 8) {
+            return response(['msj' => "El número de grupos a crear debe ser un dígito entre 2 y 8", 'cod' => 1], 422);
+        }
         try {
             $status = null;
             $message = null;

@@ -41,8 +41,7 @@
                                 item-title="GRUPO"
                                 item-value="GRUPO_SOLO"
                                 :menu-props="{ offsetY: true }"
-                                hide-details="auto"
-                                :rules="[validators.requiredObject]"                                    
+                                hide-details="auto"                               
                                 @update:modelValue="listarAlumnos"
                             ></v-autocomplete>
                     </v-col>
@@ -219,8 +218,8 @@ import { ref } from 'vue';
     $http.post('/grupos/list-grupos', entityData.value)
         .then(response => {
             response.data.data.push({GRUPO_SOLO: '', GRUPO: 'TODOS'});
-            entityData.value.horario = '' + nrcs_lbls[entityData.value.nrc]['INICIO_CLASE'] + ' - a ' + nrcs_lbls[entityData.value.nrc]['FIN_CLASE']
-            entityData.value.mod_sede = nrcs_lbls[entityData.value.nrc]['MODALIDAD'] + ' - ' + nrcs_lbls[entityData.value.nrc]['SEDE']
+            entityData.value.horario = '' + nrcs_lbls[entityData.value.nrc]['INICIO_CLASE'] + ' - ' + nrcs_lbls[entityData.value.nrc]['FIN_CLASE']
+            entityData.value.mod_sede = nrcs_lbls[entityData.value.nrc]['MODALIDAD'] + ((nrcs_lbls[entityData.value.nrc]['SEDE']) ? (' - ' + nrcs_lbls[entityData.value.nrc]['SEDE']) : '')
             entityData.value.curso = nrcs_lbls[entityData.value.nrc]['CURSO']
             entityData.value.cod_curso = nrcs_lbls[entityData.value.nrc]['COD_CURSO']
         

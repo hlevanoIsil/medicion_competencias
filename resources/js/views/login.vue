@@ -75,7 +75,7 @@ onMounted(() => {
                 href="/app/redirect" 
                 :loading="loading"
               ><v-icon icon="mdi-user"></v-icon> 
-                Usuario ISIL
+                DOCENTE ISIL
               </VBtn>
             </VCol>
           </VRow>

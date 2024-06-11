@@ -69,6 +69,8 @@ Route::group(['prefix' => 'grupos', 'middleware' => 'auth:sanctum'], function ()
     Route::post('list-alumnos', [\App\Http\Controllers\GruposController::class, 'listAlumnos']);
 
     Route::post('agregar-alumno', [\App\Http\Controllers\GruposController::class, 'agregarAlumnos']);
+    Route::post('agregar-grupo-masivo', [\App\Http\Controllers\GruposController::class, 'agregarMasivo']);
+
     Route::post('eliminar-alumno-grupo', [\App\Http\Controllers\GruposController::class, 'eliminarAlumnoGrupo']);
     Route::post('eliminar-grupo', [\App\Http\Controllers\GruposController::class, 'eliminarGrupo']);
     Route::post('generar-grupos', [\App\Http\Controllers\GruposController::class, 'generarGrupos']);

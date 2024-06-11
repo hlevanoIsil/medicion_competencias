@@ -49,7 +49,7 @@
                                     variant="outlined"
                                     density="compact"
                                     :items="nrcs"
-                                    item-title="NRC_CURSO"
+                                    item-title="LABEL"
                                     item-value="NRC"
                                     :menu-props="{ offsetY: true }"
                                     hide-details="auto"
@@ -188,8 +188,8 @@ import gruposInterfaz from './grupos-components/gruposInterfaz.vue';
     isShowEvaluacion.value = false
   }
   function changeNrc(){ 
-    entityData.value.horario = '' + nrcs_lbls[entityData.value.nrc]['INICIO_CLASE'] + ' - a ' + nrcs_lbls[entityData.value.nrc]['FIN_CLASE']
-    entityData.value.mod_sede = nrcs_lbls[entityData.value.nrc]['MODALIDAD'] + ' - ' + nrcs_lbls[entityData.value.nrc]['SEDE']
+    entityData.value.horario = '' + nrcs_lbls[entityData.value.nrc]['INICIO_CLASE'] + ' - ' + nrcs_lbls[entityData.value.nrc]['FIN_CLASE']
+    entityData.value.mod_sede = nrcs_lbls[entityData.value.nrc]['MODALIDAD'] + ((nrcs_lbls[entityData.value.nrc]['SEDE']) ? (' - ' + nrcs_lbls[entityData.value.nrc]['SEDE']) : '')
     entityData.value.curso = nrcs_lbls[entityData.value.nrc]['CURSO']
     entityData.value.cod_curso = nrcs_lbls[entityData.value.nrc]['COD_CURSO']
     //console.log(nrcs)
