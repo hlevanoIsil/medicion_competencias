@@ -8,7 +8,7 @@ $card-transition-property-custom: box-shadow, opacity;
 
 @forward "vuetify/settings" with (
    // 👉 General settings
-  $color-pack: false !default,
+  $color-pack: true !default,
   $body-font-family: $font-family-custom !default,
   $border-radius-root: 6px !default,
 

@@ -43,7 +43,7 @@ class EvaluacionController extends Controller
             oci_free_statement($cursor);
             $stmt->closeCursor();
         } catch (\Exception $e) {
-            dd($e->getMessage());
+            //dd($e->getMessage());
         }
 
         //dd($data);
@@ -91,6 +91,7 @@ class EvaluacionController extends Controller
 
     public static function listAlumnos(Request $request)
     {
+
         Actividad::saveActividad('Lista alumnos por nrc');
         //dd($request);
         /* $page = $request['page'];
@@ -251,6 +252,7 @@ class EvaluacionController extends Controller
 
         return $pdf->stream('enrollment.pdf');
     }
+
     public function viewPdf(Request $request)
     {
         Actividad::saveActividad('Ver PDF');

@@ -418,13 +418,65 @@ export default {
             form.value.validate()
         }
         const colorGrupos = ref({
-            1: 'info',
+            1: 'primary',
             2: 'success',
             3: 'error',
-            4: 'warning',
-            5: 'primary',
-            6: 'secondary',
-            7: 'red',
+            4: 'warning2',
+            5: 'info2',
+
+            6: 'primary',
+            7: 'success',
+            8: 'error',
+            9: 'warning2',
+            10: 'info2',
+
+            11: 'primary',
+            12: 'success',
+            13: 'error',
+            14: 'warning2',
+            15: 'info2',
+
+            16: 'info',
+            17: 'success',
+            18: 'error',
+            19: 'warning2',
+            20: 'info2',
+
+            21: 'info',
+            22: 'success',
+            23: 'error',
+            24: 'warning2',
+            25: 'info2',
+
+            26: 'info',
+            27: 'success',
+            28: 'error',
+            29: 'warning2',
+            30: 'info2',
+
+            31: 'info',
+            32: 'success',
+            33: 'error',
+            34: 'warning2',
+            35: 'info2',
+
+            36: 'info',
+            37: 'success',
+            38: 'error',
+            39: 'warning2',
+            40: 'info2',
+
+            41: 'info',
+            42: 'success',
+            43: 'error',
+            44: 'warning2',
+            45: 'info2',
+
+            46: 'info',
+            47: 'success',
+            48: 'error',
+            49: 'warning2',
+            50: 'info2',
         })
         let activeMsgDelete = ref(false)
         let activeMsgDelete2 = ref(false)
@@ -452,6 +504,7 @@ export default {
             { title: '', key: 'PIDM', filterable: true, sortable: false},
         ]
         let grupos = ref([])
+        let totGrupos = ref(0)
         let grupos_mas = ref([])
         let elegidos = ref([])
 
@@ -476,6 +529,7 @@ export default {
             items2,
             itemsCombo,
             grupos,
+            totGrupos,
             grupos_mas,
             elegidos,
             totalItems1,
@@ -509,9 +563,9 @@ export default {
 
             this.$http.post('grupos/list-grupos', this.entityData)
                 .then(response => {
-                    //console.log(response.data.data)
-                    this.grupos = response.data.grupos 
                     
+                    this.grupos = response.data.grupos 
+                    this.totGrupos = response.data.data.length + 1
                     //console.log(this.grupos)
                     this.items = response.data.data
                     this.totalItems1 = Number(response.data.rows) 
@@ -707,7 +761,7 @@ export default {
         },
         showMessageDelete(item){
             this.pidmDrop = item
-            this.msgDelete = "¿Eliminar Usuario Alumno del grupo?"
+            this.msgDelete = "¿Eliminar alumno del grupo?, esta acción también borrará las evaluaciones que se hayan hecho de este alumno"
             this.activeMsgDelete= true
         },
         closeMsgDelete(){
@@ -716,7 +770,7 @@ export default {
         },
         showMessageDelete2(item){
             this.itemGrupoDrop = item
-            this.msgDelete2 = "¿Eliminar el grupo del NRC?"
+            this.msgDelete2 = "¿Seguro de eliminar el grupo del NRC?, esta acción también borrará las evaluaciones que se hayan hecho de los alumnos de este grupo"
             this.activeMsgDelete2= true
         },
         showEvaForm(item){

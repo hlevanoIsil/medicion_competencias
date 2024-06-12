@@ -480,6 +480,11 @@ export default {
                     this.criterios = response.data.criterios
                     this.items = response.data.data
                     this.entityData.totCriterios = response.data.data.length -1
+                    this.entityData.grupo = this.grupo_sel ?? ''
+                    if(this.grupo_sel){
+                        //this.overlay = true
+                        this.listarAlumnosGrupo()
+                    }
                     if(response.data.data.length == 1){
                         this.$swal.fire({
                             title: 'Advertencia',
@@ -536,11 +541,6 @@ export default {
                     //console.log(this.entityData.nrc)
                     //console.log(this.grupo_sel)
                     //this.overlay = false
-                    this.entityData.grupo = this.grupo_sel ?? ''
-                    if(this.grupo_sel){
-                        //this.overlay = true
-                        this.listarAlumnosGrupo()
-                    }
                     
                 })
                 .catch(error => {
