@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Actividad;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +20,9 @@ class EvaluacionController extends Controller
     }
     public static function lisRubricasXcurso(Request $request)
     {
-        //dd($request['cod_curso']);
+        //dd($request);
+        Actividad::saveActividad('Lista rubricas');
+
         $curso = $request['cod_curso'];
         $nrc = $request['nrc'];
         $periodo = '202310';
@@ -88,6 +91,7 @@ class EvaluacionController extends Controller
 
     public static function listAlumnos(Request $request)
     {
+        Actividad::saveActividad('Lista alumnos por nrc');
         //dd($request);
         /* $page = $request['page'];
         $itemsPerPage = $request['itemsPerPage'];
@@ -116,7 +120,7 @@ class EvaluacionController extends Controller
         $stmt->closeCursor();
 
         $return = [];
-        $num_criterios = 5;
+        $num_criterios = $request['totCriterios'];
         $count = 0;
         $coment_grupal = "";
         foreach ($data as $fila) {
@@ -147,6 +151,8 @@ class EvaluacionController extends Controller
     public static function saveIndividual(Request $request)
     {
         //dd($request);
+        Actividad::saveActividad('Guarda nota individual');
+
         try {
             DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_SAVE_NOTA_INDIVIDUAL(?, ?, ?, ?, ?, ?, ?)', [
                 Auth()->user()->dni,
@@ -160,7 +166,7 @@ class EvaluacionController extends Controller
                 //&$message
             ]);
         } catch (\Exception $e) {
-            // dd($e);
+            //dd($e);
         }
         $ret['mensaje'] = "Registro correcto";
         return response($ret, Response::HTTP_OK);
@@ -168,6 +174,8 @@ class EvaluacionController extends Controller
 
     public static function saveGrupal(Request $request)
     {
+        Actividad::saveActividad('Guardar nota grupal');
+
         //dd($request);
         try {
             DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_SAVE_NOTA_GRUPAL(?, ?, ?, ?, ?, ?, ?)', [
@@ -191,6 +199,8 @@ class EvaluacionController extends Controller
     public static function saveCommentIndividual(Request $request)
     {
         //dd($request);
+        Actividad::saveActividad('Guarda comentario individual');
+
         try {
             DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_SAVE_COMENTARIOS(?, ?, ?, ?, ?, ?)', [
                 1,
@@ -210,6 +220,8 @@ class EvaluacionController extends Controller
     public static function saveCommentGrupal(Request $request)
     {
         //dd($request);
+        Actividad::saveActividad('Guardar comment grupal');
+
         try {
             DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_SAVE_COMENTARIOS(?, ?, ?, ?, ?, ?)', [
                 2,
@@ -241,6 +253,8 @@ class EvaluacionController extends Controller
     }
     public function viewPdf(Request $request)
     {
+        Actividad::saveActividad('Ver PDF');
+
         //dd($request);
         $periodo = $request['periodo'];
         $nrc = $request['nrc'];
