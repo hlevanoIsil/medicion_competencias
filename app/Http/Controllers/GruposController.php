@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Actividad;
 use Illuminate\Support\Facades\DB;
 
 class GruposController extends Controller
@@ -16,6 +16,7 @@ class GruposController extends Controller
         $periodo = $request['periodo'];
         //DNI DE PRUEBA CON NRCS = 06016500
         $dni = Auth()->user()->dni;
+        //$dni = '07732571';
         $periodo = '202310';
         //$dni = '10253131';
 
@@ -30,9 +31,13 @@ class GruposController extends Controller
         oci_fetch_all($cursor, $data, null, null, OCI_FETCHSTATEMENT_BY_ROW);
         oci_free_statement($cursor);
         $stmt->closeCursor();
+
+        $actividad = Actividad::getLast();
+        //dd($actividad['fecha_hora']);
         return [
             "data" => $data,
-            'rows' => count($data)
+            'rows' => count($data),
+            'actividad' => $actividad
         ];
     }
     public static function listNrcsJurados(Request $request)
@@ -68,6 +73,8 @@ class GruposController extends Controller
         $itemsPerPage = $request['itemsPerPage'];
         $init = ($page - 1) * $itemsPerPage;
         */
+        //registra actividad
+        Actividad::saveActividad('Listar grupos');
         /** Parametros */
         $periodo = $request['periodo'];
         $nrc = $request['nrc'];
@@ -107,6 +114,7 @@ class GruposController extends Controller
 
     public static function listAlumnos(Request $request)
     {
+        Actividad::saveActividad('Listar alumnos');
         //dd($request);
         /* $page = $request['page'];
         $itemsPerPage = $request['itemsPerPage'];
@@ -165,6 +173,8 @@ class GruposController extends Controller
     public static function agregarAlumnos(Request $request)
     {
         //dd($request);
+        Actividad::saveActividad('Agregar alumno');
+
         try {
             $status = null;
             $message = null;
@@ -192,6 +202,8 @@ class GruposController extends Controller
     public static function agregarMasivo(Request $request)
     {
         //dd($request->nrc);
+        Actividad::saveActividad('Agrega alumnos masivamente');
+
         foreach ($request['elegidos'] as $pidm) {
             //dd($pidm['pidm']);
             try {
@@ -221,6 +233,7 @@ class GruposController extends Controller
 
     public static function eliminarAlumnoGrupo(Request $request)
     {
+        Actividad::saveActividad('eliminar alumno de grupo');
         //dd($request);
         try {
             $status = null;
@@ -248,6 +261,8 @@ class GruposController extends Controller
     public static function eliminarGrupo(Request $request)
     {
         //dd($request);
+        Actividad::saveActividad('Elimina grupo');
+
         try {
             $status = null;
             $message = null;
@@ -270,9 +285,11 @@ class GruposController extends Controller
 
     public static function generarGrupos(Request $request)
     {
-        if ((int)$request['num_grupos'] < 2 || (int)$request['num_grupos'] > 8) {
-            return response(['msj' => "El número de grupos a crear debe ser un dígito entre 2 y 8", 'cod' => 1], 422);
+        if ((int)$request['num_grupos'] < 1 || (int)$request['num_grupos'] > 50) {
+            return response(['msj' => "El número de grupos a crear debe ser un dígito entre 1 y 50", 'cod' => 1], 422);
         }
+        Actividad::saveActividad('Generar grupo');
+
         try {
             $status = null;
             $message = null;

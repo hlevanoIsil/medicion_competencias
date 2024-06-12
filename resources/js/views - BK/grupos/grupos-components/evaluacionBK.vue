@@ -22,7 +22,7 @@
     </v-snackbar>
     
     <v-row >
-        <v-col cols="12" md="10" ></v-col>
+        <v-col cols="12" md="10" class="text-right"></v-col>
         <v-col cols="12" md="2" class="text-right">
                             <v-btn block color="info" @click="regresar" variant="outlined" > 
                                 <v-icon
@@ -40,13 +40,10 @@
             <v-card >
                 <v-card-text>
                     <v-row >
-                        <v-col cols="12" md="4">
+                        <v-col cols="12" md="6">
                             <h3>RÚBRICA</h3>
                         </v-col>
-                        <v-col cols="12" md="4" class="text-center"><h3>PERIODO 202310</h3></v-col>
-                        
-                        <v-col cols="12" md="4" class="text-right" >
-                            
+                        <v-col cols="12" md="6" class="text-right" >
                             <v-btn title="Expandir / Contraer" color="warning" size="x-small"  > 
                                 <v-icon size="20"
                                     left
@@ -167,7 +164,6 @@
                                     @update:modelValue="listarAlumnosGrupo" 
                                 ></v-select>
                         </v-col>
-                        
                     </v-row>
                     <v-divider class="mb-5 mt-5" ></v-divider>
                     <v-row>
@@ -283,7 +279,7 @@
                     <v-row class="mt-2 mb-1" v-if="entityData.grupo != ''">
                         
                     <v-divider></v-divider>
-                        <v-col cols="12" md="4" >
+                        <v-col cols="12" md="12" >
                             <v-btn size="small" color="warning"  @click="dialog = true"> 
                                         <v-icon
                                             left
@@ -291,14 +287,6 @@
                                             icon="mdi-comment"
                                         >
                                         </v-icon>&nbsp;Añadir comentario al grupo</v-btn>
-                        </v-col>
-                        <v-col cols="12" md="8" class="text-right pr-6" >
-                           <strong>Nota: para guardar cada comentario individual en las cajas de texto presione la tecla "TAB" alterminar de escribir</strong> <v-icon
-                                            left
-                                            dark
-                                            icon="mdi-gesture-swipe-up"
-                                        >
-                                        </v-icon>
                         </v-col>
                     </v-row>
                    
@@ -309,7 +297,6 @@
     <v-dialog
       v-model="dialog"
       max-width="600"
-      persistent
     >
     <v-form ref="form"
                 v-model="valid"
