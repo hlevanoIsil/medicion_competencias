@@ -192,7 +192,7 @@
                         </v-col>    
                     </v-row>
                     <v-divider class="mb-1 mt-5" ></v-divider>
-                    <v-table class="mt-0 pt-6"  v-if="entityData.grupo != ''">
+                    <v-table class="mt-0 pt-6"  v-if="entityData.grupo != '' && totAlumnos > 0">
                         <template v-slot:default>
                         <thead style="background-color: #f9fafc;">
                             <tr>
@@ -280,7 +280,7 @@
                         </template>
                     </v-table>
 
-                    <v-row class="mt-2 mb-1" v-if="entityData.grupo != ''">
+                    <v-row class="mt-2 mb-1" v-if="entityData.grupo != '' && totAlumnos > 0">
                         
                     <v-divider></v-divider>
                         <v-col cols="12" md="4" >
@@ -404,6 +404,7 @@ export default {
         let showSnackbar = ref(false)
         let showSnackbarCom1 = ref(false)
         let totCriterios = ref(0)
+        let totAlumnos = ref(0)
         const valid = ref(false)
         const form = ref(null)
         const validate = () => {
@@ -447,6 +448,7 @@ export default {
             showSnackbar,
             showSnackbarCom1,
             totCriterios,
+            totAlumnos,
             grupos,
             itemsCal,
             criterios,
@@ -553,8 +555,21 @@ export default {
             }
             this.overlay = true 
             this.$http.post('evaluacion/list-alumnos', this.entityData)
-                .then(response => {        
-                    //console.log(response.data.data)        
+                .then(response => {   
+                    if(response.data.data.length == 0){
+                        this.$swal.fire({
+                            title: 'Advertencia',
+                            text: "Este grupo aún no tiene alumnos asignados, puede asignarlos en el módulo de creación de grupos",
+                            icon: "warning",
+                            confirmButtonText: 'Ir al inicio',
+                            allowOutsideClick: false
+                        }).then((result) => {
+                        if (result.isConfirmed) {
+                            this.regresar()
+                        }
+                        })
+                    }     
+                    this.totAlumnos = response.data.data.length
                     //console.log(response.data.coment_grupal) 
                     //console.log(this.itemsNot)      
                     this.itemsNot = response.data.data 
