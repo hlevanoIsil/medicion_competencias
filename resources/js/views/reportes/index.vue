@@ -7,7 +7,7 @@
                 icon="mdi-file-pdf"
                 color="error"
               >
-              </v-icon> <strong>Reporte de resultados - Periodo 202310</strong></h4>
+              </v-icon> <strong>Reporte de resultados - Periodo {{periodo}}</strong></h4>
         </v-card-title>
         <v-divider ></v-divider>
         <v-card-text v-if="!isShowEntityActive" class="my-4">
@@ -183,6 +183,7 @@ import { ref } from 'vue';
     overlay.value = value
   }
   let isShowEntityActive = ref(false)
+  let periodo = ref(null)
 
   const valid = ref(false)
   const form = ref(null)
@@ -192,7 +193,7 @@ import { ref } from 'vue';
   }
   
   let  validators = { requiredObject}
-  let entityData = ref({periodo: '202310', spriden_id:'TODOS', first_name:'TODOS', last_name:'TODOS'})
+  let entityData = ref({periodo: null, spriden_id:'TODOS', first_name:'TODOS', last_name:'TODOS'})
   let nrcs = ref([])
   let nrcs_lbls = ref([])
   let grupos = ref([])
@@ -203,6 +204,11 @@ import { ref } from 'vue';
   
   function initialize() {
       setOverlay(true)
+      $http.post('system/curtermcode')
+      .then(per => {
+        periodo = per.data
+        entityData.value.periodo = per.data
+      })
       $http.post('/grupos/list-nrcs-docente')
         .then(response => {
             nrcs.value = response.data.data
@@ -228,6 +234,7 @@ import { ref } from 'vue';
             grupos.value = response.data.data
             // cambia labels
             //console.log(this.entityData.nrc)
+            validate()
             listarAlumnos()
             setOverlay(false)
         })
@@ -251,6 +258,7 @@ import { ref } from 'vue';
             })
     }
   function onSubmit(){
+  
     //alert()
     if (valid.value) {
         setOverlay(true)

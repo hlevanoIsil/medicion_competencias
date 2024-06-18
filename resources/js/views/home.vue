@@ -14,7 +14,7 @@
               <span class="flex-nowrap text-primary text-h5 "> {{userData.first_name}} {{userData.last_name}} </span>
 
               <br><br>
-              <span class="flex-nowrap text-h6 ">Periodo vigente: 202310</span>
+              <span class="flex-nowrap text-h6 ">Periodo vigente: {{periodo}}</span>
               
             </v-card-text>
           </v-col>
@@ -45,14 +45,29 @@ import avatar from '@images/avatars/pose-f-39.png';
 import triangleDark from '@images/misc/triangle-dark.png';
 import triangleLight from '@images/misc/triangle-light.png';
 import { useTheme } from 'vuetify';
+const $http = inject('http')
 
 const userData = JSON.parse(localStorage.getItem('userData'))
 const userMenu = JSON.parse(localStorage.getItem('userMenu'))
 var { overlay } = useAppConfig()
+let periodo = ref(null)
 
 const { global } = useTheme()
 const triangleBg = computed(() => global.name.value === 'light' ? triangleLight : triangleDark)
-
+  
+function initialize() {
+  $http.post('system/curtermcode')
+      .then(per => {
+        periodo.value = per.data
+         
+      })
+      .catch(error => {
+          //isLoading.value = false
+      })
+  }
+  onBeforeMount(() => { 
+    initialize() 
+  })
 </script>
 <style lang="scss" scoped>
 

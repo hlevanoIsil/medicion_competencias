@@ -11,6 +11,7 @@ use App\Models\UserSystem;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use App\Models\Data;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\DB;
 use hash;
@@ -85,6 +86,11 @@ class LoginController extends Controller
         $user->role = Role::find($user->role_id)->name;
 
         $menu = new MenuItem();
+
+        //PERIODO VIGENTE
+        $rsPeriodo = Data::currentTermCodeCT();
+        //$request->session()->put('periodo', ($rsPeriodo) ?  $rsPeriodo->cperiodo : '202410');
+        $request->session()->put('periodo', ($rsPeriodo) ?  $rsPeriodo->cperiodo : '202410');
 
         $response = [
             'token' => $request['password'],

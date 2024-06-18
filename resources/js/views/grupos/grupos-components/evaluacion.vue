@@ -43,7 +43,7 @@
                         <v-col cols="12" md="4">
                             <h3>RÚBRICA</h3>
                         </v-col>
-                        <v-col cols="12" md="4" class="text-center"><h3>PERIODO 202310</h3></v-col>
+                        <v-col cols="12" md="4" class="text-center"><h3>PERIODO {{periodo}}</h3></v-col>
                         
                         <v-col cols="12" md="4" class="text-right" >
                             
@@ -270,7 +270,7 @@
                                         shaped
                                         class="mb-1 mt-1"
                                         title="Presione la tecla TAB para guardar el comentario"
-                                        v-bind:model-value="item['comments']"
+                                        v-model="item['comments']" 
                                         @keydown="updateCommentInd($event, item.PIDM)"
                                     ></v-textarea>
                                 </div>
@@ -405,6 +405,7 @@ export default {
         let showSnackbarCom1 = ref(false)
         let totCriterios = ref(0)
         let totAlumnos = ref(0)
+        let periodo = ref(null)
         const valid = ref(false)
         const form = ref(null)
         const validate = () => {
@@ -440,6 +441,7 @@ export default {
         ]
         return {
             overlay,
+            periodo,
             items,
             headers,
             headersNot,
@@ -464,7 +466,13 @@ export default {
     },
     methods:{
         initialize() {
+
             this.overlay = true
+
+            this.$http.post('system/curtermcode')
+            .then(per => {
+                this.periodo = per.data
+            })
             //console.log(this.entityData)
             this.entityData.grupo  = null
             //this.cargarRubricas()
@@ -478,7 +486,9 @@ export default {
         cargarRubricas(){
             this.$http.post('evaluacion/list-rubricas-x-curso', this.entityData)
                 .then(response => {
-                    //this.grupos = []                    
+                    //this.grupos = []
+                    //console.log(response.data.criterios)       
+                    //response.data.data.push({GRUPO_SOLO: '', GRUPO: 'Elegir grupo'});             
                     this.criterios = response.data.criterios
                     this.items = response.data.data
                     this.entityData.totCriterios = response.data.data.length -1
@@ -571,7 +581,7 @@ export default {
                     }     
                     this.totAlumnos = response.data.data.length
                     //console.log(response.data.coment_grupal) 
-                    //console.log(this.itemsNot)      
+                    console.log(response.data.data )      
                     this.itemsNot = response.data.data 
                     this.entityData.commentGrupal = response.data.coment_grupal
 
@@ -583,6 +593,7 @@ export default {
                     //tableKey++
                 })
                 .catch(error => {
+                    this.overlay = false
                     //isLoading.value = false
                 })
         },
@@ -621,9 +632,10 @@ export default {
                     
                     this.listarAlumnosGrupo() 
                     this.showSnackbar = true   
-                    //this.overlay = false  
+                    this.overlay = false  
                 })
                 .catch(error => {
+                    this.overlay = false
                     //isLoading.value = false
                 })
         },

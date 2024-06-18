@@ -19,7 +19,7 @@
                             </v-chip>
 
                             <p class="mt-2">En la plataforma, se te permite añadir y editar grupos, al igual que evaluar el desempeño de los estudiantes</p>
-                            <p class="mt-2 text-white text-h6">El periodo vigente es 202310</p>
+                            <p class="mt-2 text-white text-h6">El periodo vigente es {{periodo}}</p>
                         </div>
                         <div v-if="userData.role_id==3">
                             <v-icon
@@ -31,7 +31,7 @@
                             </v-chip>
 
                             <p class="mt-2">Dentro de la plataforma, tienes la posibilidad de asignar calificaciones y dejar comentarios a los estudiantes y a los grupos.</p>
-                            <p class="mt-2 text-white text-h6">El periodo vigente es 202310</p>
+                            <p class="mt-2 text-white text-h6">El periodo vigente es {{periodo}}</p>
                         </div>
                         <hr class="mt-4 mb-4 pl-2 pr-2">
                         <v-icon
@@ -139,7 +139,7 @@ import evaluacion from './grupos-components/evaluacion.vue';
 import gruposInterfaz from './grupos-components/gruposInterfaz.vue';
 
   let { overlay } = useAppConfig()
-  const $http = inject('http')
+  let $http = inject('http')
   const setOverlay = (value) => {
     overlay.value = value
   }
@@ -148,15 +148,23 @@ import gruposInterfaz from './grupos-components/gruposInterfaz.vue';
   let isShowEntityActive = ref(false)
   let isShowEvaluacion = ref(false)
   
-  let entityData = ref({periodo: '202310'})
+  let entityData = ref({})
   let nrcs = ref([])
   let nrcs_lbls = ref([])
   let nrcs_lbls2 = ref([])
   let grupo_sel = ref(null)
   let fecha_hora = ref(null)
+  let periodo = ref(null)
+
   function initialize() {
     //
       setOverlay(true)
+      $http.post('system/curtermcode')
+      .then(per => {
+        periodo = per.data
+        entityData.periodo = per.data
+      })
+
       if(userData.role_id == 2){
         $http.post('/grupos/list-nrcs-docente')
         .then(response => {

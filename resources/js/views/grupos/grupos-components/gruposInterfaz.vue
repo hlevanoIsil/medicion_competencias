@@ -25,7 +25,7 @@
                 <v-card-text>
                     <v-row >
                         <v-col cols="12" md="9">
-                            <h3 >DATOS DEL NRC - PERIODO 202310</h3>
+                            <h3 >DATOS DEL NRC - PERIODO {{periodo}}</h3>
                         </v-col>
                         <v-col cols="12" md="3" class="text-right">
                             <v-btn block color="info" @click="regresar" variant="outlined"> 
@@ -503,8 +503,9 @@ export default {
             { title: 'DNI', key: 'DNI', filterable: true, sortable: false},
             { title: '', key: 'PIDM', filterable: true, sortable: false},
         ]
+        let periodo = ref(null)
+
         let grupos = ref([])
-        let totGrupos = ref(0)
         let grupos_mas = ref([])
         let elegidos = ref([])
 
@@ -523,13 +524,13 @@ export default {
             form,
             validate,
             validators: { required, requiredObject },
+            periodo,
             headers,
             items,
             headers2,
             items2,
             itemsCombo,
             grupos,
-            totGrupos,
             grupos_mas,
             elegidos,
             totalItems1,
@@ -554,18 +555,28 @@ export default {
     },
     methods: {
         initialize() {
+            console.log(this.entityData)
+            /*this.$http.post('system/curtermcode')
+            .then(per => {
+                this.periodo = per.data
+            })*/
+
             this.entityData.dni = ''
+            this.entityData.num_grupos = ''
+            this.entityData.totGrupos = 0
+            
             this.overlay = true
             this.listarGrupos()
             this.listarAlumnos()
         },
         listarGrupos(){
-
+           // console.log(this.entityData)
             this.$http.post('grupos/list-grupos', this.entityData)
                 .then(response => {
+                    //console.log(this.entityData)
                     
                     this.grupos = response.data.grupos 
-                    this.totGrupos = response.data.data.length + 1
+                    this.entityData.totGrupos = response.data.data.length + 1
                     //console.log(this.grupos)
                     this.items = response.data.data
                     this.totalItems1 = Number(response.data.rows) 
@@ -589,6 +600,7 @@ export default {
         listarAlumnos(){
             this.entityData.grupo = null
             this.overlay = true
+            
             this.$http.post('grupos/list-alumnos', this.entityData)
                 .then(response => {
                     this.items2 = response.data.data
@@ -636,7 +648,7 @@ export default {
             }else{
                 this.dialog = true; 
                 this.grupoActual = ngrupo
-                this.listarAlumnosGrupo()
+                this.listarAlumnosGrupo() 
             }
         },
         agregarEstudiante(){
@@ -649,19 +661,16 @@ export default {
                     .then(response => {
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                         this.overlay = false
-                        //this.$forceUpdate();
+                        //this.$forceUpdate(); 
                         this.listarAlumnosGrupo()
                         this.entityData.pidm = null
                         this.loadAlert(response.data.mensaje, 'success', 'Éxito')
                         
                     }).catch(err =>{
+                        //console.log(err)
                         this.overlay = false
-                        if(err.response.status == 422) {                  
-                            this.loadAlert('Error de servidor');
-                            this.$forceUpdate();
-                        } else {
-                            this.loadAlert(err.response.data.message);
-                        }
+                       // this.loadAlert(err.response.data.msj ?? err.response.data.errors.file[0], 'error')
+                        
 
                     });
     
@@ -736,12 +745,15 @@ export default {
         },
         generarGrupos(e){
 
-            if(e.code == "Enter"){         
+            if(e.code == "Enter"){
+                if(this.entityData.num_grupos  == ""){
+                    return
+                }
                 this.overlay = true
-                
+                this.entityData
                 this.$http.post('grupos/generar-grupos', this.entityData)
                     .then(response => {  
-                        this.entityData.num_grupos = null
+                        this.entityData.num_grupos = ''
                         this.showSnackbar = true 
                         this.listarGrupos()                        
                         this.listarAlumnosGrupo()    

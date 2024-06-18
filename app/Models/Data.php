@@ -10,6 +10,11 @@ class Data extends Model
 {
     use HasFactory;
 
+    public static function currentTermCodeCT()
+    {
+        $query = "select * from isil.tab_periodos_nivel where CNIVEL='CT' and CESTAD='S'";
+        return DB::connection('oracle')->select($query)[0] ?? null;
+    }
 
     public static function horariosDocente($pidm)
     {

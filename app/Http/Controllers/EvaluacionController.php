@@ -20,12 +20,12 @@ class EvaluacionController extends Controller
     }
     public static function lisRubricasXcurso(Request $request)
     {
-        //dd($request);
         Actividad::saveActividad('Lista rubricas');
 
         $curso = $request['cod_curso'];
         $nrc = $request['nrc'];
-        $periodo = '202310';
+        $periodo = $request->session()->get('periodo');
+
         //dd($curso);
         //dd($nrc);
         //dd($periodo);
@@ -47,45 +47,52 @@ class EvaluacionController extends Controller
         }
 
         //dd($data);
-        $crit_cols = array_column($data, 'NUM_CRITERIO');
-        //dd($data);
         $criterios = [];
-        foreach ($crit_cols as $crit) {
-            if ($crit) {
-                foreach ($data as $row) {
-                    if ($row['NUM_CRITERIO'] == $crit) {
+        if (isset($data)) {
+            $crit_cols = array_column($data, 'NUM_CRITERIO');
+            //dd($data);
 
-                        $criterios[$crit]['subheader'] = 'Elige una calificación:';
-                        $criterios[$crit]['PUN_EXC']['PUNT'] = (float)$row['PUN_EXC'];
-                        $criterios[$crit]['PUN_EXC']['DESCR'] = "EXCELENTE";
-                        $criterios[$crit]['PUN_EXC']['COD'] = 1;
+            foreach ($crit_cols as $crit) {
+                if ($crit) {
+                    foreach ($data as $row) {
+                        if ($row['NUM_CRITERIO'] == $crit) {
 
-                        $criterios[$crit]['PUN_BUE']['PUNT'] = (float)$row['PUN_BUE'];
-                        $criterios[$crit]['PUN_BUE']['DESCR'] = "BUENO";
-                        $criterios[$crit]['PUN_BUE']['COD'] = 2;
+                            $criterios[$crit]['subheader'] = 'Elige una calificación:';
+                            $criterios[$crit]['PUN_EXC']['PUNT'] = (float)$row['PUN_EXC'];
+                            $criterios[$crit]['PUN_EXC']['DESCR'] = "EXCELENTE";
+                            $criterios[$crit]['PUN_EXC']['COD'] = 1;
 
-                        $criterios[$crit]['PUN_ENPR']['PUNT'] = (float)$row['PUN_ENPR'];
-                        $criterios[$crit]['PUN_ENPR']['DESCR'] = "EN PROCESO";
-                        $criterios[$crit]['PUN_ENPR']['COD'] = 3;
+                            $criterios[$crit]['PUN_BUE']['PUNT'] = (float)$row['PUN_BUE'];
+                            $criterios[$crit]['PUN_BUE']['DESCR'] = "BUENO";
+                            $criterios[$crit]['PUN_BUE']['COD'] = 2;
 
-                        $criterios[$crit]['PUN_DEFI']['PUNT'] = (float)$row['PUN_DEFI'];
-                        $criterios[$crit]['PUN_DEFI']['DESCR'] = "DEFICIENTE";
-                        $criterios[$crit]['PUN_DEFI']['COD'] = 4;
+                            $criterios[$crit]['PUN_ENPR']['PUNT'] = (float)$row['PUN_ENPR'];
+                            $criterios[$crit]['PUN_ENPR']['DESCR'] = "EN PROCESO";
+                            $criterios[$crit]['PUN_ENPR']['COD'] = 3;
 
-                        $criterios[$crit]['PUN_INSAT']['PUNT'] = (float)$row['PUN_INSAT'];
-                        $criterios[$crit]['PUN_INSAT']['DESCR'] = "INSATISFACTORIO";
-                        $criterios[$crit]['PUN_INSAT']['COD'] = 5;
+                            $criterios[$crit]['PUN_DEFI']['PUNT'] = (float)$row['PUN_DEFI'];
+                            $criterios[$crit]['PUN_DEFI']['DESCR'] = "DEFICIENTE";
+                            $criterios[$crit]['PUN_DEFI']['COD'] = 4;
+
+                            $criterios[$crit]['PUN_INSAT']['PUNT'] = (float)$row['PUN_INSAT'];
+                            $criterios[$crit]['PUN_INSAT']['DESCR'] = "INSATISFACTORIO";
+                            $criterios[$crit]['PUN_INSAT']['COD'] = 5;
+
+                            $criterios[$crit]['PUN_NP']['PUNT'] = "NP";
+                            $criterios[$crit]['PUN_NP']['DESCR'] = "No se presentó";
+                            $criterios[$crit]['PUN_NP']['COD'] = 6;
+                        }
                     }
+                    // $found_key = array_search($crit, array_column($data, 'NUM_CRITERIO'));
+                    // dd($found_key);
                 }
-                // $found_key = array_search($crit, array_column($data, 'NUM_CRITERIO'));
-                // dd($found_key);
             }
         }
         //dd($criterios);
         return [
-            'data' => $data,
+            'data' => $data ?? [],
             'criterios' => $criterios,
-            'rows' => count($data)
+            'rows' =>  isset($data) ? count($data) : 0
         ];
     }
 
@@ -99,10 +106,10 @@ class EvaluacionController extends Controller
         $init = ($page - 1) * $itemsPerPage;
         */
         /** Parametros */
-        $periodo = $request['periodo'];
         $nrc = $request['nrc'];
         $curso = $request['cod_curso'];
-        $periodo = '202310';
+        $periodo = $request->session()->get('periodo');
+
         $grupo = $request['grupo'] ?? null;
         //$nrc = '1001';
 
@@ -129,10 +136,15 @@ class EvaluacionController extends Controller
             $return[$count]['NOMBRES'] = $fila['NOMBRES'];
 
             for ($i = 1; $i <= $num_criterios; $i++) {
-                //$return[$count]['NOMBRES'] = $fila['NOMBRES'];
-
-                //$return[$count]['criterio_' . $i]  = isset($fila['NOTA_CRIT_' . $i]) ? (float)$fila['NOTA_CRIT_' . $i] : null;
-                $return[$count]['notas'][$i]  = isset($fila['NOTA_CRIT_' . $i]) ? (float)$fila['NOTA_CRIT_' . $i] : null;
+                $return[$count]['notas'][$i] = null;
+                if (isset($fila['NOTA_CRIT_' . $i])) {
+                    if ($fila['NOTA_CRIT_' . $i] == "NP") {
+                        $return[$count]['notas'][$i] = $fila['NOTA_CRIT_' . $i];
+                    } else {
+                        $return[$count]['notas'][$i] = (float)$fila['NOTA_CRIT_' . $i];
+                    }
+                }
+                //$return[$count]['notas'][$i]  = isset($fila['NOTA_CRIT_' . $i]) ? (float)$fila['NOTA_CRIT_' . $i] : null;
             }
             $return[$count]['comments']  = $fila['COMENTARIOS'];
             $return[$count]['PIDM']  = $fila['PIDM'];
@@ -160,7 +172,7 @@ class EvaluacionController extends Controller
                 $request->pidm_alumno,
                 $request->nrc,
                 $request->cod_curso,
-                $request->periodo,
+                $request->session()->get('periodo'),
                 $request->criterio,
                 $request->cod_nota
                 //&$status,
@@ -175,16 +187,16 @@ class EvaluacionController extends Controller
 
     public static function saveGrupal(Request $request)
     {
+        //dd(Auth()->user()->dni);
         Actividad::saveActividad('Guardar nota grupal');
 
-        //dd($request);
         try {
             DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_SAVE_NOTA_GRUPAL(?, ?, ?, ?, ?, ?, ?)', [
                 Auth()->user()->dni,
                 $request->grupo,
                 $request->nrc,
                 $request->cod_curso,
-                $request->periodo,
+                $request->session()->get('periodo'),
                 $request->criterio,
                 $request->cod_nota
                 //&$status,
@@ -205,7 +217,7 @@ class EvaluacionController extends Controller
         try {
             DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_SAVE_COMENTARIOS(?, ?, ?, ?, ?, ?)', [
                 1,
-                $request->periodo,
+                $request->session()->get('periodo'),
                 $request->pidm_alumno,
                 $request->nrc,
                 null,
@@ -226,7 +238,7 @@ class EvaluacionController extends Controller
         try {
             DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_SAVE_COMENTARIOS(?, ?, ?, ?, ?, ?)', [
                 2,
-                $request->periodo,
+                $request->session()->get('periodo'),
                 null,
                 $request->nrc,
                 $request->grupo,
@@ -258,7 +270,7 @@ class EvaluacionController extends Controller
         Actividad::saveActividad('Ver PDF');
 
         //dd($request);
-        $periodo = $request['periodo'];
+        $periodo = $request->session()->get('periodo');
         $nrc = $request['nrc'];
         $curso = $request['cod_curso'];
         $grupo = $request['grupo'];
@@ -317,8 +329,13 @@ class EvaluacionController extends Controller
                     $notas[$cont]['NUM_CRITERIO'] = "Criterio " . $fila['NUM_CRITERIO'];
                     $notas[$cont]['NOM_CRITERIO'] = $fila['NOM_CRITERIO'];
                     $notas[$cont]['DESCR_NOTA'] = $fila['DESCR_NOTA'];
-                    $notas[$cont]['NOTA'] = (float)$fila['NOTA'];
-                    $notaTotal += (float)$fila['NOTA'];
+                    //dd($fila['NOTA']);
+                    if ($fila['NOTA'] == "NP") {
+                        $notas[$cont]['NOTA'] = "NP";
+                    } else {
+                        $notas[$cont]['NOTA'] = (float)$fila['NOTA'];
+                        $notaTotal += (float)$fila['NOTA'];
+                    }
 
                     $datos[$pidm]["NOTAS"] = $notas;
                     $datos[$pidm]["NOTA_FINAL"] = $notaTotal;

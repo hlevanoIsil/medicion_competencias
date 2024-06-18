@@ -8,6 +8,10 @@ use App\Models\Data;
 
 class DataController extends Controller
 {
+    public function getCurrentTermcodeCT(Request $request)
+    {
+        return $request->session()->get('periodo');
+    }
 
     public function getTermcodeTeacher(Request $request)
     {

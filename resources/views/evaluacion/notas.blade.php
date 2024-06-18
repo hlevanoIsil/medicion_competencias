@@ -140,25 +140,25 @@
 
         <table width="100%" cellpading=0 cellspacing=0 border=0>
             <tr>
-                <td class="tdHead">NOMBRE DEL CURSO</td>
+                <td class="tdHead"><strong>NOMBRE DEL CURSO</strong></td>
                 <td class="tdHead">
-                    NRC
+                     <strong>NRC</strong>
                 </td>
                 <td class="tdHead">
-                    HORARIOS
+                     <strong>HORARIOS</strong>
                 </td>
                 <td class="tdHead">
-                    MODALIDAD
+                     <strong>MODALIDAD</strong>
                 </td>
             </tr>
             <tr>
-                <td class="tdHead"><strong>{{$curso}}</strong> </td>
-                <td class="tdHead"><strong>{{$nrc}}</strong> </td>
-                <td class="tdHead"><strong>{{$horarios}}</strong> </td>
-                <td class="tdHead"><strong>{{$modalidad}}</strong> </td>
+                <td class="tdHead">{{$curso}}</td>
+                <td class="tdHead">{{$nrc}}</td>
+                <td class="tdHead">{{$horarios}}</td>
+                <td class="tdHead">{{$modalidad}}</td>
             </tr>
             <tr>
-                <td class="tdHead" colspan="4">DOCENTE: <strong>{{$dato['DOCENTE']}}</strong></td>
+                <td class="tdHead" colspan="4"><strong>DOCENTE:</strong> <span class="subtitulo">{{$dato['DOCENTE']}}</span></td>
             </tr>
 
         </table>
@@ -199,8 +199,10 @@
                         <br>
                         <strong>{{$nota['NOM_CRITERIO']}}</strong>
                     </td>
-                    <td class="tdBorderB txtCenter" style="padding-left: 3px; padding-right: 3px;">
-                        {{$nota['NOTA']}} puntos
+                    <td class="tdBorderB txtCenter" style="padding-left: 3px; padding-right: 3px;">                        
+                        {{$nota['NOTA']}} @if ($nota['NOTA'] != "NP")
+                        puntos
+                        @endif
                     </td>
                     <td class="tdBorderB" style="padding-left: 10px">
                         {{$nota['DESCR_NOTA']}}

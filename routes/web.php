@@ -50,6 +50,8 @@ Route::group(['prefix' => 'auth', 'middleware' => 'auth:sanctum'], function () {
 
 Route::group(['prefix' => 'system', 'middleware' => 'auth:sanctum'], function () {
     Route::resource('menu',   \App\Http\Controllers\MenuItemController::class);
+    Route::post('curtermcode', [\App\Http\Controllers\DataController::class, 'getCurrentTermcodeCT']);
+
     Route::post('termcode', [\App\Http\Controllers\DataController::class, 'getTermcode']);
     Route::post('getcoordinador', [\App\Http\Controllers\DataController::class, 'getCoordinador']);
     Route::get('termcodeall', [\App\Http\Controllers\DataController::class, 'getTermcodeAll']);

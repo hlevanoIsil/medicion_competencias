@@ -13,11 +13,10 @@ class GruposController extends Controller
     public static function listNrcsDocente(Request $request)
     {
 
-        $periodo = $request['periodo'];
         //DNI DE PRUEBA CON NRCS = 06016500
         $dni = Auth()->user()->dni;
         //$dni = '07732571';
-        $periodo = '202310';
+        $periodo = $request->session()->get('periodo');
         //$dni = '10253131';
 
         $pdo = DB::connection('oracle')->getPdo();
@@ -42,12 +41,10 @@ class GruposController extends Controller
     }
     public static function listNrcsJurados(Request $request)
     {
-
-        $periodo = $request['periodo'];
         //DNI DE PRUEBA CON NRCS = 06016500
         $dni = Auth()->user()->dni;
         //$dni = '09588929';
-        $periodo = '202310';
+        $periodo = $request->session()->get('periodo');
 
         $pdo = DB::connection('oracle')->getPdo();
         $stmt = $pdo->prepare("BEGIN ISIL.SP_MEDICIONCOMP_LISTAR_NRC_X_JURADO(:periodo, :dni, :cursor); END;");
@@ -76,10 +73,9 @@ class GruposController extends Controller
         //registra actividad
         Actividad::saveActividad('Listar grupos');
         /** Parametros */
-        $periodo = $request['periodo'];
         $nrc = $request['nrc'];
 
-        $periodo = '202310';
+        $periodo = $request->session()->get('periodo');
         //$nrc = '1001';
 
         $pdo = DB::connection('oracle')->getPdo();
@@ -121,9 +117,10 @@ class GruposController extends Controller
         $init = ($page - 1) * $itemsPerPage;
         */
         /** Parametros */
-        $periodo = $request['periodo'];
+        //$periodo = $request['periodo'];
         $nrc = $request['nrc'];
-        $periodo = '202310';
+        $periodo = $request->session()->get('periodo');
+
         $grupo = $request['grupo'] ?? null;
         $dni = $request['dni'] ?? null;
         //$nrc = '1001';
@@ -172,6 +169,10 @@ class GruposController extends Controller
 
     public static function agregarAlumnos(Request $request)
     {
+        if ($request->pidm == "") {
+            return response(['msj' => "Seleccione estudiante", 'cod' => 1], 422);
+        }
+
         //dd($request);
         Actividad::saveActividad('Agregar alumno');
 
@@ -186,7 +187,7 @@ class GruposController extends Controller
             DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_AGREGAR_ALUMNO_GRUPO(?, ?, ?, ?, ?)', [
                 $request->grupo,
                 $request->nrc, // carrera
-                $request->periodo, // periodo
+                $request->session()->get('periodo'), // periodo
                 $request->pidm,
                 1
                 //&$status,
@@ -217,7 +218,7 @@ class GruposController extends Controller
                 DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_AGREGAR_ALUMNO_GRUPO(?, ?, ?, ?, ?)', [
                     $request->grupo_masivo,
                     $request->nrc, // carrera
-                    $request->periodo, // periodo
+                    $request->session()->get('periodo'), // periodo
                     $pidm['pidm'],
                     1
                     //&$status,
@@ -246,7 +247,7 @@ class GruposController extends Controller
             DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_AGREGAR_ALUMNO_GRUPO(?, ?, ?, ?, ?)', [
                 $request->grupo,
                 $request->nrc, // carrera
-                $request->periodo, // periodo
+                $request->session()->get('periodo'), // periodo
                 $request->pidmDrop,
                 0
                 //&$status,
@@ -274,7 +275,7 @@ class GruposController extends Controller
             DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_GROUP_DELETE(?, ?, ?)', [
                 $request->itemGrupoDrop,
                 $request->nrc, // carrera
-                $request->periodo, // periodo
+                $request->session()->get('periodo'), // periodo
             ]);
         } catch (\Exception $e) {
             //dd ($e);
@@ -285,8 +286,10 @@ class GruposController extends Controller
 
     public static function generarGrupos(Request $request)
     {
-        if ((int)$request['num_grupos'] < 1 || (int)$request['num_grupos'] > 50) {
-            return response(['msj' => "El número de grupos a crear debe ser un dígito entre 1 y 50", 'cod' => 1], 422);
+        //dd($request['totGrupos']);
+        //if ((int)$request['num_grupos'] < 1 || (int)$request['num_grupos'] > 50) {
+        if ((int)$request['num_grupos'] < $request['totGrupos'] || (int)$request['num_grupos'] > 50) {
+            return response(['msj' => "El número de grupos a crear debe ser un dígito entre " . $request['totGrupos'] . "y 50", 'cod' => 1], 422);
         }
         Actividad::saveActividad('Generar grupo');
 
@@ -297,7 +300,7 @@ class GruposController extends Controller
             DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_CREAR_GRUPOS(?, ?, ?)', [
                 $request->num_grupos,
                 $request->nrc, // carrera
-                $request->periodo, // periodo
+                $request->session()->get('periodo'), // periodo
             ]);
         } catch (\Exception $e) {
             //dd($e);
