@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Str;
 use App\Models\Actividad;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +20,7 @@ class EvaluacionController extends Controller
             mkdir($this->_uploadFolder, 0777, true);
         }
     }
+
     public static function lisRubricasXcurso(Request $request)
     {
         Actividad::saveActividad('Lista rubricas');
@@ -26,9 +29,6 @@ class EvaluacionController extends Controller
         $nrc = $request['nrc'];
         $periodo = $request->session()->get('periodo');
 
-        //dd($curso);
-        //dd($nrc);
-        //dd($periodo);
         try {
             $pdo = DB::connection('oracle')->getPdo();
             $stmt = $pdo->prepare("BEGIN ISIL.SP_MEDICIONCOMP_RUBRICAS_DET_X_CURSO(:periodo, :curso, :nrc, :cursor); END;");
@@ -46,12 +46,9 @@ class EvaluacionController extends Controller
             //dd($e->getMessage());
         }
 
-        //dd($data);
         $criterios = [];
         if (isset($data)) {
             $crit_cols = array_column($data, 'NUM_CRITERIO');
-            //dd($data);
-
             foreach ($crit_cols as $crit) {
                 if ($crit) {
                     foreach ($data as $row) {
@@ -83,8 +80,6 @@ class EvaluacionController extends Controller
                             $criterios[$crit]['PUN_NP']['COD'] = 6;
                         }
                     }
-                    // $found_key = array_search($crit, array_column($data, 'NUM_CRITERIO'));
-                    // dd($found_key);
                 }
             }
         }
@@ -94,6 +89,53 @@ class EvaluacionController extends Controller
             'criterios' => $criterios,
             'rows' =>  isset($data) ? count($data) : 0
         ];
+    }
+
+    public static function descargaRubricasXcurso(Request $request)
+    {
+        Actividad::saveActividad('Descarga rubricas');
+
+        $curso = $request['cod_curso'];
+        $nrc = $request['nrc'];
+        $horario = $request['horario'];
+        $sede = $request['sede'];
+        $nomcurso = $request['curso'];
+
+        $periodo = $request->session()->get('periodo');
+
+        try {
+            $pdo = DB::connection('oracle')->getPdo();
+            $stmt = $pdo->prepare("BEGIN ISIL.SP_MEDICIONCOMP_RUBRICAS_DET_X_CURSO(:periodo, :curso, :nrc, :cursor); END;");
+            $stmt->bindParam(':periodo', $periodo, \PDO::PARAM_STR);
+            $stmt->bindParam(':curso', $curso, \PDO::PARAM_STR);
+            $stmt->bindParam(':nrc', $nrc, \PDO::PARAM_STR);
+            $stmt->bindParam(':cursor', $cursor, \PDO::PARAM_STMT | \PDO::PARAM_INPUT_OUTPUT);
+            $stmt->execute();
+            oci_execute($cursor);
+
+            oci_fetch_all($cursor, $data, null, null, OCI_FETCHSTATEMENT_BY_ROW);
+            oci_free_statement($cursor);
+            $stmt->closeCursor();
+        } catch (\Exception $e) {
+            //dd($e->getMessage());
+        }
+
+        //dd($data);
+
+        $view = view('evaluacion.rubrica', compact(
+            'data',
+            'curso',
+            'nrc',
+            'horario',
+            'sede',
+            'nomcurso',
+            'periodo'
+
+        ))->render();
+
+        $pdf = App::make('dompdf.wrapper');
+        $pdf->loadHTML($view)->setPaper('a4', 'landscape');
+        return $pdf->download("Detalle de Rúbrica - NRC " . $nrc . ".pdf");
     }
 
     public static function listAlumnos(Request $request)
@@ -111,21 +153,38 @@ class EvaluacionController extends Controller
         $periodo = $request->session()->get('periodo');
 
         $grupo = $request['grupo'] ?? null;
+
+        $dni_docente = "";
+        $dni_jurado = "";
+
+        if (auth()->user()->role_id == 2) {
+            $dni_docente = auth()->user()->dni;
+        } elseif (auth()->user()->role_id == 3) {
+            $dni_jurado = auth()->user()->dni;
+        }
         //$nrc = '1001';
 
         $pdo = DB::connection('oracle')->getPdo();
-        $stmt = $pdo->prepare("BEGIN ISIL.SP_MEDICIONCOMP_LISTAR_ALUMNOS_NOTAS_X_NRC(:periodo, :curso, :nrc, :grupo, :cursor); END;");
-        $stmt->bindParam(':periodo', $periodo, \PDO::PARAM_STR);
-        $stmt->bindParam(':curso', $curso, \PDO::PARAM_STR);
-        $stmt->bindParam(':nrc', $nrc, \PDO::PARAM_STR);
-        $stmt->bindParam(':grupo', $grupo, \PDO::PARAM_STR);
-        $stmt->bindParam(':cursor', $cursor, \PDO::PARAM_STMT | \PDO::PARAM_INPUT_OUTPUT);
-        $stmt->execute();
-        oci_execute($cursor);
 
-        oci_fetch_all($cursor, $data, null, null, OCI_FETCHSTATEMENT_BY_ROW);
-        oci_free_statement($cursor);
-        $stmt->closeCursor();
+        try {
+            $stmt = $pdo->prepare("BEGIN ISIL.SP_MEDICIONCOMP_LISTAR_ALUMNOS_NOTAS_X_NRC(:periodo, :curso, :nrc, :grupo, :dni_docente, :dni_jurado, :cursor); END;");
+            $stmt->bindParam(':periodo', $periodo, \PDO::PARAM_STR);
+            $stmt->bindParam(':curso', $curso, \PDO::PARAM_STR);
+            $stmt->bindParam(':nrc', $nrc, \PDO::PARAM_STR);
+            $stmt->bindParam(':grupo', $grupo, \PDO::PARAM_STR);
+            $stmt->bindParam(':dni_docente', $dni_docente, \PDO::PARAM_STR);
+            $stmt->bindParam(':dni_jurado', $dni_jurado, \PDO::PARAM_STR);
+            $stmt->bindParam(':cursor', $cursor, \PDO::PARAM_STMT | \PDO::PARAM_INPUT_OUTPUT);
+            $stmt->execute();
+            oci_execute($cursor);
+
+            oci_fetch_all($cursor, $data, null, null, OCI_FETCHSTATEMENT_BY_ROW);
+            oci_free_statement($cursor);
+            $stmt->closeCursor();
+        } catch (\Exception $e) {
+            //dd($e);
+        }
+
 
         $return = [];
         $num_criterios = $request['totCriterios'];
@@ -146,10 +205,18 @@ class EvaluacionController extends Controller
                 }
                 //$return[$count]['notas'][$i]  = isset($fila['NOTA_CRIT_' . $i]) ? (float)$fila['NOTA_CRIT_' . $i] : null;
             }
-            $return[$count]['comments']  = $fila['COMENTARIOS'];
+
             $return[$count]['PIDM']  = $fila['PIDM'];
 
-            $coment_grupal  = $fila['COMENTARIO_GRUPAL'];
+            if (auth()->user()->role_id == 2) {
+                $coment_grupal  = $fila['COMENTARIO_GRUPAL'];
+                $return[$count]['comments']  = $fila['COMENTARIOS'];
+            } elseif (auth()->user()->role_id == 3) {
+                $coment_grupal  = $fila['COMENTARIO_JURADO_GRUPAL'];
+                $return[$count]['comments']  = $fila['COMENTARIOS_JURADO'];
+            }
+
+
 
             $count++;
         }
@@ -166,9 +233,19 @@ class EvaluacionController extends Controller
         //dd($request);
         Actividad::saveActividad('Guarda nota individual');
 
+        $dni_docente = "";
+        $dni_jurado = "";
+
+        if (auth()->user()->role_id == 2) {
+            $dni_docente = auth()->user()->dni;
+        } elseif (auth()->user()->role_id == 3) {
+            $dni_jurado = auth()->user()->dni;
+        }
+
         try {
-            DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_SAVE_NOTA_INDIVIDUAL(?, ?, ?, ?, ?, ?, ?)', [
-                Auth()->user()->dni,
+            DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_SAVE_NOTA_INDIVIDUAL(?, ?, ?, ?, ?, ?, ?, ?)', [
+                $dni_docente,
+                $dni_jurado,
                 $request->pidm_alumno,
                 $request->nrc,
                 $request->cod_curso,
@@ -190,9 +267,19 @@ class EvaluacionController extends Controller
         //dd(Auth()->user()->dni);
         Actividad::saveActividad('Guardar nota grupal');
 
+        $dni_docente = "";
+        $dni_jurado = "";
+
+        if (auth()->user()->role_id == 2) {
+            $dni_docente = auth()->user()->dni;
+        } elseif (auth()->user()->role_id == 3) {
+            $dni_jurado = auth()->user()->dni;
+        }
+
         try {
-            DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_SAVE_NOTA_GRUPAL(?, ?, ?, ?, ?, ?, ?)', [
-                Auth()->user()->dni,
+            DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_SAVE_NOTA_GRUPAL(?, ?, ?, ?, ?, ?, ?, ?)', [
+                $dni_docente,
+                $dni_jurado,
                 $request->grupo,
                 $request->nrc,
                 $request->cod_curso,
@@ -215,13 +302,15 @@ class EvaluacionController extends Controller
         Actividad::saveActividad('Guarda comentario individual');
 
         try {
-            DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_SAVE_COMENTARIOS(?, ?, ?, ?, ?, ?)', [
+            DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_SAVE_COMENTARIOS(?, ?, ?, ?, ?, ?, ?, ?)', [
                 1,
                 $request->session()->get('periodo'),
                 $request->pidm_alumno,
                 $request->nrc,
-                null,
-                $request->comment
+                $request->grupo,
+                $request->comment,
+                auth()->user()->role_id,
+                auth()->user()->dni
             ]);
         } catch (\Exception $e) {
             // dd($e);
@@ -236,16 +325,18 @@ class EvaluacionController extends Controller
         Actividad::saveActividad('Guardar comment grupal');
 
         try {
-            DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_SAVE_COMENTARIOS(?, ?, ?, ?, ?, ?)', [
+            DB::connection('oracle')->select('CALL ISIL.SP_MEDICIONCOMP_SAVE_COMENTARIOS(?, ?, ?, ?, ?, ?, ?, ?)', [
                 2,
                 $request->session()->get('periodo'),
                 null,
                 $request->nrc,
                 $request->grupo,
-                $request->commentGrupal
+                $request->commentGrupal,
+                auth()->user()->role_id,
+                auth()->user()->dni
             ]);
         } catch (\Exception $e) {
-            // dd($e);
+            //dd($e);
         }
         $ret['mensaje'] = "Registro correcto";
         return response($ret, Response::HTTP_OK);
@@ -267,9 +358,31 @@ class EvaluacionController extends Controller
 
     public function viewPdf(Request $request)
     {
+        //ESTO SOLO LO VE EL DOCENTE
+
+        //---------------------------------------------------------------------------------------------------------
         Actividad::saveActividad('Ver PDF');
 
-        //dd($request);
+        //OBTIENE JURADOS
+        try {
+            $dni_docente = auth()->user()->dni;
+            $nrc = $request['nrc'];
+            $pdo = DB::connection('oracle')->getPdo();
+            $stmt = $pdo->prepare("BEGIN ISIL.SP_MEDICIONCOMP_LISTAR_JURADOS_X_NRC(:dni_docente, :nrc, :cursor); END;");
+            $stmt->bindParam(':dni_docente', $dni_docente, \PDO::PARAM_STR);
+            $stmt->bindParam(':nrc', $nrc, \PDO::PARAM_STR);
+            $stmt->bindParam(':cursor', $cursor, \PDO::PARAM_STMT | \PDO::PARAM_INPUT_OUTPUT);
+            $stmt->execute();
+            oci_execute($cursor);
+
+            oci_fetch_all($cursor, $jurados, null, null, OCI_FETCHSTATEMENT_BY_ROW);
+            oci_free_statement($cursor);
+            $stmt->closeCursor();
+        } catch (\Exception $e) {
+            //dd($e->getMessage());
+        }
+
+        //OBTIENE NOTAS
         $periodo = $request->session()->get('periodo');
         $nrc = $request['nrc'];
         $curso = $request['cod_curso'];
@@ -303,7 +416,7 @@ class EvaluacionController extends Controller
             oci_free_statement($cursor);
             $stmt->closeCursor();
         } catch (\Exception $e) {
-            dd($e->getMessage());
+            //dd($e->getMessage());
         }
 
         $pidms = array_column($data, 'SPRIDEN_PIDM');
@@ -316,31 +429,71 @@ class EvaluacionController extends Controller
             $notas = [];
             $cont = 0;
             $notaTotal = 0;
+            $sumaNota = [];
             foreach ($data as $fila) {
-                //dd($fila);
 
                 if ($fila['SPRIDEN_PIDM'] == $pidm) {
-                    $datos[$pidm]["NOMBRES"] = $fila['FULLNAME'];
+
+                    if (!isset($flgJurado1[$pidm])) {
+                        $flgJurado1[$pidm] = false;
+                    }
+                    if (!isset($flgJurado2[$pidm])) {
+                        $flgJurado2[$pidm] = false;
+                    }
+
                     $datos[$pidm]["DOCENTE"] = $fila['FULLNAME_DOCENTE'];
+                    /*if ($fila['PIDM_DOCENTE'] != '') {
+                       
+                    }*/
+                    //$sumaNota[$pidm][$fila['NUM_CRITERIO']] = (float)$fila['PROM_X_CRITERIO'];
+                    $sumaNota[$pidm][$fila['NUM_CRITERIO']] = 0;
+                    //} else {
+                    $datos[$pidm]["NOMBRES"] = $fila['FULLNAME'];
+
                     $datos[$pidm]["GRUPO"] = $fila['GRUPO_NUM'];
                     $datos[$pidm]["COMENTARIOS"] = $fila['COMENTARIOS'];
                     $datos[$pidm]["COMENTARIO_GRUPAL"] = $fila['COMENTARIO_GRUPAL'];
 
+                    $datos[$pidm]["COMENTARIOS_JURADO"] = $fila['COMENTARIOS_JURADO'];
+                    $datos[$pidm]["COMENTARIO_JURADO_GRUPAL"] = $fila['COMENTARIO_JURADO_GRUPAL'];
+
                     $notas[$cont]['NUM_CRITERIO'] = "Criterio " . $fila['NUM_CRITERIO'];
+                    $notas[$cont]['COD_CRITERIO'] = $fila['NUM_CRITERIO'];
                     $notas[$cont]['NOM_CRITERIO'] = $fila['NOM_CRITERIO'];
                     $notas[$cont]['DESCR_NOTA'] = $fila['DESCR_NOTA'];
+
+                    $notas[$cont]['NOTA_DOCENTE'] = $fila['NOTA_DOCENTE'];
+                    $notas[$cont]['NOTA_JURADO1'] = $fila['NOTA_JURADO1'];
+                    $notas[$cont]['NOTA_JURADO2'] = $fila['NOTA_JURADO2'];
+
+                    if ((float)$fila['NOTA_JURADO1'] > 0)  $flgJurado1[$pidm] = true;
+                    if ((float)$fila['NOTA_JURADO2'] > 0)  $flgJurado2[$pidm] = true;
+
+                    $notas[$cont]['NOM_JURADO'] = $fila['NOM_JURADO'] ?? '';
+                    //$notas[$cont]['NOTA'] = (float)$fila['PROM_X_CRITERIO'];
                     //dd($fila['NOTA']);
+                    //dd($fila);
                     if ($fila['NOTA'] == "NP") {
                         $notas[$cont]['NOTA'] = "NP";
                     } else {
-                        $notas[$cont]['NOTA'] = (float)$fila['NOTA'];
-                        $notaTotal += (float)$fila['NOTA'];
+                        $notas[$cont]['NOTA'] = $fila['NOTA']; //(float)$fila['NOTA'];
+                        //$notaTotal += (float)$fila['NOTA'];
                     }
 
+
+                    //$notaTotal += (float)$fila['PROM_X_CRITERIO'];
+                    $notaTotal = $fila['PROM_FINAL'];
+                    //}
                     $datos[$pidm]["NOTAS"] = $notas;
-                    $datos[$pidm]["NOTA_FINAL"] = $notaTotal;
+                    $datos[$pidm]["NOTA_FINAL"] = number_format($notaTotal, 1, '.');
+
+                    $datos[$pidm]["flgJurado1"] = $flgJurado1[$pidm];
+                    $datos[$pidm]["flgJurado2"] = $flgJurado2[$pidm];
+
                     $cont++;
                 }
+                //if ($cont > 6) dd($sumaNota);
+                //dd($sumaNota);
             }
         }
         //dd($datos);
@@ -348,12 +501,15 @@ class EvaluacionController extends Controller
         $nrc = $request['nrc'];
         $horarios = $request['horario'];
         $modalidad = $request['mod_sede'];
+        //dd($jurados);
         $view = view('evaluacion.notas', compact(
             'datos',
             'curso',
             'nrc',
             'horarios',
-            'modalidad'
+            'modalidad',
+            'periodo',
+            'jurados'
         ))->render();
 
         $pdf = App::make('dompdf.wrapper');
