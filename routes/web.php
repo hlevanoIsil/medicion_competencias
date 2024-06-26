@@ -81,6 +81,8 @@ Route::group(['prefix' => 'grupos', 'middleware' => 'auth:sanctum'], function ()
 Route::group(['prefix' => 'evaluacion', 'middleware' => 'auth:sanctum'], function () {
 
     Route::post('list-rubricas-x-curso', [\App\Http\Controllers\EvaluacionController::class, 'lisRubricasXcurso']);
+    Route::get('descarga-rubricas-x-curso', [\App\Http\Controllers\EvaluacionController::class, 'descargaRubricasXcurso']);
+
     Route::post('list-alumnos', [\App\Http\Controllers\EvaluacionController::class, 'listAlumnos']);
     Route::post('alumno-save-individual', [\App\Http\Controllers\EvaluacionController::class, 'saveIndividual']);
     Route::post('alumno-save-grupal', [\App\Http\Controllers\EvaluacionController::class, 'saveGrupal']);

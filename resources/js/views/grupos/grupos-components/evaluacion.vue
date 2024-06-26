@@ -58,11 +58,30 @@
                         </v-col>
                     </v-row>
                     <v-divider class="mt-3"></v-divider>
+
                     <v-row>
                         <v-col>
                             <v-expand-transition>
                                 <div v-show="showRubrica">
-                                    <v-table class="mt-0 pt-6">
+                                    <v-row>
+                                        <v-col>
+                                            <v-avatar size="28" color="error" v-bind="props" class="mr-1 mt-2">
+                                                <a :href="'/evaluacion/descarga-rubricas-x-curso/?cod_curso=' +  
+                                                entityData.cod_curso + '&nrc=' + entityData.nrc
+                                                + '&horario=' + entityData.horario
+                                                + '&sede=' + entityData.mod_sede
+                                                + '&curso=' + entityData.curso "  target="_blank">
+                                                    <v-icon size="20" icon="mdi-download" color="white">
+                                                    </v-icon>
+                                                </a>
+                                                <v-tooltip activator="parent"  >
+                                                    Descargar Rúbrica
+                                                </v-tooltip>
+                                            </v-avatar>
+
+                                        </v-col>
+                                    </v-row>
+                                    <v-table class="mt-0 pt-2">
                                         <template v-slot:default>
                                         <thead style="background-color: #f9fafc;">
                                             <tr>
@@ -581,7 +600,7 @@ export default {
                     }     
                     this.totAlumnos = response.data.data.length
                     //console.log(response.data.coment_grupal) 
-                    console.log(response.data.data )      
+                    //console.log(response.data.data )      
                     this.itemsNot = response.data.data 
                     this.entityData.commentGrupal = response.data.coment_grupal
 
@@ -652,7 +671,7 @@ export default {
                         this.overlay = false  
                     })
                     .catch(error => {
-                        //isLoading.value = false
+                        this.overlay = false  
                     })
 
             }

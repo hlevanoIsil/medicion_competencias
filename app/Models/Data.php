@@ -12,7 +12,7 @@ class Data extends Model
 
     public static function currentTermCodeCT()
     {
-        $query = "select * from isil.tab_periodos_nivel where CNIVEL='CT' and CESTAD='S'";
+        $query = "select * from isil.tab_periodos_nivel where CNIVEL='CT' and CESTAD='Ss'";
         return DB::connection('oracle')->select($query)[0] ?? null;
     }
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="auth-wrapper2 d-flex align-center justify-center pa-4">
+  <div class="auth-wrapper d-flex align-center justify-center pa-4">
     <VCard
       
       class="auth-card pa-4 pt-7"
@@ -43,6 +43,7 @@
                 hint="Ingrese su dni"
                 variant="outlined"
                 density="compact"
+                type="number"
                 hide-details="auto"
                 :rules="[validators.required]"
               ></v-text-field>
@@ -62,7 +63,7 @@
           </VRow>
           <VRow v-if="msj1"> 
             <VCol cols="12" >
-             <p class="text-error text-center mt-0 mb-0" >Credenciales incorrectas</p>
+             <p class="text-error text-center mt-0 mb-0" > {{ msjErr }} </p>
             </VCol>
           </VRow>
           <VRow > 
@@ -128,6 +129,7 @@ let id = ref('')
 let password = ref('')
 let loading = ref(false)
 let msj1 = ref(false)
+let msjErr = ref('')
 
 function initialize() {
 
@@ -154,12 +156,39 @@ function onSubmit() {
       location.href ="/login/" + response.data.dni + "/" + response.data.token;
     }else{
       msj1.value = true
+      msjErr.value = "Credenciales incorrectas."
     }
     //alert("aa")         
     setOverlay(false)             
   })
   .catch(error => {
-    console.log(error)
+    msj1.value = true
+    msjErr.value = ""
+    if(error.response.data.errors){
+      //console.log(error.response.data.errors)
+      if(error.response.data.errors.id){
+        error.response.data.errors.id.forEach((element) => 
+          msjErr.value += element + ", "
+        );
+      }
+
+      if(error.response.data.errors.password){
+        error.response.data.errors.password.forEach((element) => 
+          msjErr.value += element + ", "
+      );
+      }
+
+
+      msjErr.value = msjErr.value.substring(0, msjErr.value.length - 2);
+
+    }else{
+      msjErr.value = error.response.data.msj
+      
+    }
+    //msjErr.value = error.response.data.msj
+    
+    //this.loadAlert(, 'error')
+
     setOverlay(false)   
   })
 }

@@ -3,33 +3,39 @@
     <v-row justify="center">
     <v-col cols="12" md="12" order="1" order-md="2" class="align-self-end mb-2 mt-md-0">
       <v-card class="ps-3 home" color="on-primary">
-        <v-row>
+        <v-row >
           <v-col cols="8" sm="8">
             <v-card-text class="text-2xl pt-8 text-right text-no-wrap" >
               <span class="text-secondary text-no-wrap text-h6">Bienvenid@ !! </span>
               <!--<span class="text-no-wrap font-weight-bold mx-1">ISIL/LAB</span>-->
               <span class="text-h6">🥳</span>
-            </v-card-text>
-            <v-card-text class="text-2xl font-weight-bold py-10 text-right" >
-              <span class="flex-nowrap text-primary text-h5 "> {{userData.first_name}} {{userData.last_name}} </span>
-
-              <br><br>
-              <span class="flex-nowrap text-h6 ">Periodo vigente: {{periodo}}</span>
               
             </v-card-text>
+            <v-card-text class="text-2xl  py-10 text-right" >
+              <span class="flex-nowrap font-weight-bold text-primary text-h5 "> {{userData.first_name}} {{userData.last_name}} </span>
+
+              <br><br>
+              <span class="flex-nowrap text-h6 " style="text-align: justify;">Periodo vigente: {{periodo}}</span>
+              <br><br>
+              <p style="text-align: justify;">El modelo de Medición del Logro de Competencias fue diseñado e implementado desde el 2019. Tiene como finalidad de evaluar, analizar y validar el nivel del logro de las competencias específicas alcanzado por nuestros estudiantes en cada uno de nuestros programas de estudio y a lo largo de sus diferentes procesos formativos.</p>
+
+<p style="text-align: justify;">Este modelo es aplicado utilizando el “proyecto” de la “evaluación final”, en los cursos que hemos denominado como “Cursos Integradores” los cuales tienen la característica de reunir las competencias propuestas por ISIL en cada una de las certificaciones anuales de nuestros programas de estudio. </p>
+
+<p style="text-align: justify;">La información obtenida del proceso es sumamente relevante para la actualización nuestros programas de estudio, la mejora continua de nuestros procesos y como evidencia para los diferentes procesos de acreditación de ISIL. </p>
+
+<p style="text-align: justify;">Desde el área de Calidad Educativa agradecemos su profesionalismo y buena disposición durante su participación en la ejecución de este modelo.</p>
+<p style="text-align: justify;">Calidad Educativa <br>Sub-Dirección de Competencias y Acreditaciones</p>
+
+            </v-card-text>
+            
           </v-col>
-          <v-col cols="4" sm="4">
-            <div>
-              <VImg
-                :src="triangleBg"
-                class="triangle-bg flip-in-rtl"
-              />
-              <VImg
+          <v-col cols="4" sm="4"  >
+            <VImg
                 width="150"
                 :src="avatar"
                 class="gamification-john-pose-2"
               ></VImg>
-            </div>
+
           </v-col>
         </v-row>
       </v-card>

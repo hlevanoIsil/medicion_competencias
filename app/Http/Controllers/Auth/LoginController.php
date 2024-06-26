@@ -7,10 +7,9 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\MenuItem;
-use App\Models\UserSystem;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
+use Validator;
 use App\Models\Data;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\DB;
@@ -90,7 +89,8 @@ class LoginController extends Controller
         //PERIODO VIGENTE
         $rsPeriodo = Data::currentTermCodeCT();
         //$request->session()->put('periodo', ($rsPeriodo) ?  $rsPeriodo->cperiodo : '202410');
-        $request->session()->put('periodo', ($rsPeriodo) ?  $rsPeriodo->cperiodo : '202410');
+        //$request->session()->put('periodo', ($rsPeriodo) ?  $rsPeriodo->cperiodo : '202410');
+        $request->session()->put('periodo', ($rsPeriodo) ?  $rsPeriodo->cperiodo : '202310');
 
         $response = [
             'token' => $request['password'],
@@ -121,10 +121,27 @@ class LoginController extends Controller
     }*/
     public function loginJurado(Request $request)
     {
+        $messages = [
+            'id.required' => 'DNI requerido.',
+            'id.numeric'    => 'DNI debe ser numérico',
+            'id.digits'    => 'El DNI debe ser número de 8 dígitos',
+            'id.alpha_dash'   => 'No Autorizado',
+            'password.max'   => 'No Autorizado.',
+        ];
+        $request->validate([
+            'id' => ['required', 'numeric', 'digits:8', 'alpha_dash'],
+            'password' => ['max:10']
+        ], $messages);
 
-        $userExists = User::where('dni', $request['id'])
-            ->where('password', hash('sha256', $request['password']))
+        // Sanitize the input (optional, but recommended)
+        $id = $request->input('id');
+        $pwd = $request->input('password');
+
+
+        $userExists = User::whereRaw('dni = ?', $id)
+            ->whereRaw('password = ?', hash('sha256', $pwd))
             ->first();
+
         //dd($userExists);
         if ($userExists) {
 
@@ -137,12 +154,8 @@ class LoginController extends Controller
             ];
             return response($response, Response::HTTP_OK);
         } else {
-            $response = [
-                'token' => null,
-                'dni' =>  null,
-                'message' => 'No Autorizado'
-            ];
-            return response($response, Response::HTTP_OK);
+
+            return response(['msj' => "Credenciales incorrectas, contactar con el área de Calidad Educativa", 'cod' => 1], 422);
         }
 
         //return redirect($_ENV["APP_URL"] . "/app/logout");

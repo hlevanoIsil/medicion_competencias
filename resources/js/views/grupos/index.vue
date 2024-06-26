@@ -20,6 +20,12 @@
 
                             <p class="mt-2">En la plataforma, se te permite añadir y editar grupos, al igual que evaluar el desempeño de los estudiantes</p>
                             <p class="mt-2 text-white text-h6">El periodo vigente es {{periodo}}</p>
+
+                            <p>
+                               <strong>Soporte:</strong>
+De presentarse algún inconveniente con la plataforma, por favor enviar un correo <a href="mailto:ticketsti@isil.pe" class="text-white"><strong>ticketsti@isil.pe</strong> </a> y poner en copia a su coordinador asignado. Describir el detalle del problema y de ser necesario enviar capturas de pantalla. Muchas gracias.
+
+                            </p>
                         </div>
                         <div v-if="userData.role_id==3">
                             <v-icon
@@ -32,6 +38,11 @@
 
                             <p class="mt-2">Dentro de la plataforma, tienes la posibilidad de asignar calificaciones y dejar comentarios a los estudiantes y a los grupos.</p>
                             <p class="mt-2 text-white text-h6">El periodo vigente es {{periodo}}</p>
+                            <p>
+                               <strong>Soporte:</strong>
+De presentarse algún inconveniente con la plataforma, por favor enviar un correo <a href="mailto:ticketsti@isil.pe" class="text-white"><strong>ticketsti@isil.pe</strong> </a> y poner en copia a su coordinador asignado. Describir el detalle del problema y de ser necesario enviar capturas de pantalla. Muchas gracias.
+
+                            </p>
                         </div>
                         <hr class="mt-4 mb-4 pl-2 pr-2">
                         <v-icon
@@ -87,7 +98,7 @@
                                 </v-col>
                             </v-row>
                             <v-row>
-                                <v-col cols="12" md="3" v-if="userData.role_id==2">
+                                <v-col cols="12" md="3" >
                                     <v-btn block color="info" @click="isShowEntityActive=true" > 
                                         <v-icon
                                             left

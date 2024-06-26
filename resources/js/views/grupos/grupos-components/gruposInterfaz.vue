@@ -81,7 +81,7 @@
                             </v-chip>
                         </v-col>
                     </v-row>
-                    <v-row class="mb-0 pb-0">
+                    <v-row class="mb-0 pb-0" v-if="userData.role_id==2">
                         <v-col cols="12" md="8" class="mb-0 pb-0"></v-col>
                         <v-col cols="12" md="4" class="text-right mb-0 pb-0">
                             <v-text-field
@@ -107,8 +107,8 @@
                         no-data-text="No hay datos para mostrar"
                         loading-text="Cargando..."
                     >
-                        <template #[`item.GRUPO_SOLO`]="{ item }">
-                            <v-tooltip location="top" text="Editar" >
+                        <template #[`item.GRUPO_SOLO`]="{ item }" >
+                            <v-tooltip location="top" text="Editar" v-if="userData.role_id==2">
                                 <template v-slot:activator="{ props }" >
                                 <v-avatar size="28" color="success" v-bind="props" class="mr-1">
                                     <v-icon size="15"  
@@ -118,7 +118,7 @@
                                 </template>
                             </v-tooltip> 
                             
-                            <v-tooltip location="top" text="Eliminar" >
+                            <v-tooltip location="top" text="Eliminar" v-if="userData.role_id==2">
                                 <template v-slot:activator="{ props }">
                                 <v-avatar size="28" color="error" v-bind="props" class="mr-1">
                                     <v-icon size="15"  
@@ -164,7 +164,7 @@
                         </template>
                         <template v-slot:bottom></template>
                     </v-data-table-server>
-                    <v-row >
+                    <v-row v-if="userData.role_id==2">
                         <v-col cols="12" md="4">
                             <v-btn block color="primary" @click="ventanaGrupo(1)"> 
                                 <v-icon
@@ -195,7 +195,7 @@
                         </v-col>
                     </v-row>
                     <v-divider class="mb-3 mt-5" ></v-divider>
-                    <v-row>
+                    <v-row v-if="userData.role_id==2">
                         <v-col>
                             <v-autocomplete
                                 label="Seleccionar estudiante"
@@ -258,7 +258,7 @@
                                             <!--
                                             <v-btn color="secondary" icon="mdi-plus-circle-outline " size="30" v-bind="props"></v-btn>-->
                                         </template>
-                                        <v-list class="listaCal pr-3 pl-3" density="compact">                                    
+                                        <v-list class="listaCal pr-3 pl-3" density="compact" v-if="userData.role_id==2">                                    
                                             <v-list-item
                                                 v-for="(grupo, x) in grupos"
                                                 :key="x"
@@ -417,6 +417,7 @@ export default {
         const validate = () => {
             form.value.validate()
         }
+        const userData = JSON.parse(localStorage.getItem('userData')) || {}
         const colorGrupos = ref({
             1: 'primary',
             2: 'success',
@@ -483,7 +484,7 @@ export default {
         let headers = [
             { title: 'GRUPO', key: 'GRUPO', width:120, filterable: true , sortable: false},
             { title: 'INTEGRANTES', key: 'NOMBRES', filterable: true, sortable: false},
-            { title: '', key: 'GRUPO_SOLO', width:150,  sortable: false },        
+            { title: '', key: 'GRUPO_SOLO', width:150,  sortable: false , align:'center'},        
         ]
         let items = ref([])
         let totalItems1 = ref(0)
@@ -520,6 +521,7 @@ export default {
         
         return {
             overlay,
+            userData,
             valid,
             form,
             validate,
@@ -555,11 +557,11 @@ export default {
     },
     methods: {
         initialize() {
-            console.log(this.entityData)
-            /*this.$http.post('system/curtermcode')
+
+            this.$http.post('system/curtermcode')
             .then(per => {
                 this.periodo = per.data
-            })*/
+            })
 
             this.entityData.dni = ''
             this.entityData.num_grupos = ''

@@ -206,7 +206,7 @@ import { ref } from 'vue';
       setOverlay(true)
       $http.post('system/curtermcode')
       .then(per => {
-        periodo = per.data
+        periodo.value = per.data
         entityData.value.periodo = per.data
       })
       $http.post('/grupos/list-nrcs-docente')

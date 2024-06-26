@@ -150,20 +150,33 @@
                 <td class="tdHead">
                      <strong>MODALIDAD</strong>
                 </td>
+                <td class="tdHead">
+                    <strong>PERIODO</strong>
+               </td>
             </tr>
             <tr>
                 <td class="tdHead">{{$curso}}</td>
                 <td class="tdHead">{{$nrc}}</td>
                 <td class="tdHead">{{$horarios}}</td>
                 <td class="tdHead">{{$modalidad}}</td>
+                <td class="tdHead">{{$periodo}}</td>
             </tr>
             <tr>
                 <td class="tdHead" colspan="4"><strong>DOCENTE:</strong> <span class="subtitulo">{{$dato['DOCENTE']}}</span></td>
             </tr>
-
+            @php
+                $numJ = 0;
+            @endphp
+            @foreach ($jurados as $jurado)
+            @php
+                $numJ++;
+            @endphp
+            
+                <tr>
+                    <td class="tdHead" colspan="4"><strong>JURADO {{$jurado['TIPO']}} (jurado {{$numJ}}):</strong> <span class="subtitulo">{{$jurado['JURADO_NOMBRES']}}</span></td>
+                </tr>
+            @endforeach
         </table>
-
-        <br>
         <table cellspacing=0 cellpadding=0 width="100%">
             <tr>
                 <td width="8%" >
@@ -180,33 +193,66 @@
                 </td>
             </tr>
         </table>
+        <br>
         <table  cellspacing=0 cellpadding=0 width="100%">
             <tr>
-                <td class="subtitulo tdBorderB" align="center">
+                <td class="subtitulo tdBorderB" align="center" >
                     Criterio
                 </td>
-                <td class="subtitulo tdBorderB" align="center">
-                    Puntaje obtenido
+                <td class="subtitulo tdBorderB" align="center" width="9%">
+                    Puntaje<br>Docente
                 </td>
-                <td class="subtitulo tdBorderB" align="center">
+
+                @if ($dato['flgJurado1'])
+                    <td class="subtitulo tdBorderB" align="center" width="9%">
+                        Puntaje<br>Jurado 1
+                    </td>
+                @endif
+
+                @if ($dato['flgJurado2'])
+                    <td class="subtitulo tdBorderB" align="center" width="9%">
+                        Puntaje<br>Jurado 2
+                    </td>
+                @endif
+
+                @if ($dato['flgJurado1'] || $dato['flgJurado2'])
+                    <td class="subtitulo tdBorderB" align="center" width="9%">
+                        Puntaje<br>Promedio
+                    </td>
+                @endif
+                <td class="subtitulo tdBorderB" align="center" >
                     Descripción
                 </td>
             </tr>
             @foreach ($dato['NOTAS'] as $nota)
                 <tr>
                     <td class="tdBorderB">
-                        {{$nota['NUM_CRITERIO']}}<br>
+                        {{$nota['NUM_CRITERIO']}} @if ($nota['NOM_JURADO'] != '') <br> <i> <small>(Jurado: {{$nota['NOM_JURADO']}})</small></i> @endif<br>
                         <br>
                         <strong>{{$nota['NOM_CRITERIO']}}</strong>
                     </td>
+
                     <td class="tdBorderB txtCenter" style="padding-left: 3px; padding-right: 3px;">                        
-                        {{$nota['NOTA']}} @if ($nota['NOTA'] != "NP")
-                        puntos
-                        @endif
+                        {{$nota['NOTA_DOCENTE']}}
                     </td>
+                    @if ($dato['flgJurado1'])
+                        <td class="tdBorderB txtCenter" style="padding-left: 3px; padding-right: 3px;">                        
+                            {{$nota['NOTA_JURADO1']}}
+                        </td>
+                    @endif
+
+                    @if ($dato['flgJurado2'])
+                        <td class="tdBorderB txtCenter" style="padding-left: 3px; padding-right: 3px;">                        
+                            {{$nota['NOTA_JURADO2']}}
+                        </td>
+                    @endif
+                    @if ($dato['flgJurado1'] || $dato['flgJurado2'])
+                        <td class="tdBorderB txtCenter" style="padding-left: 3px; padding-right: 3px;">                        
+                            {{$nota['NOTA']}} @if ($nota['NOTA'] != "NP")<br>puntos @endif
+                        </td>
+                    @endif
                     <td class="tdBorderB" style="padding-left: 10px">
-                        {{$nota['DESCR_NOTA']}}
-                    </td>
+                        {{$nota['DESCR_NOTA']}}</td>
                 </tr>
             @endforeach
         </table>
@@ -215,7 +261,7 @@
         <table  cellspacing=0 cellpadding=0 width="100%">
             <tr>
                 <td class="subtitulo">
-                    Comentario Individual:
+                    Comentario Individual de Docente:
                 </td>
             </tr>
             <tr>
@@ -230,7 +276,7 @@
         <table  cellspacing=0 cellpadding=0 width="100%">
             <tr>
                 <td class="subtitulo">
-                    Comentario Grupal:
+                    Comentario Grupal de Docente:
                 </td>
             </tr>
             <tr>
@@ -240,6 +286,43 @@
             </tr>
         </table> 
         @endif
+
+
+
+
+
+        @if ($dato['COMENTARIOS_JURADO'] != '')
+        <br>
+        <table  cellspacing=0 cellpadding=0 width="100%">
+            <tr>
+                <td class="subtitulo">
+                    Comentario Individual de Jurado:
+                </td>
+            </tr>
+            <tr>
+                <td class="cajaBgAzul">
+                    {!! nl2br($dato['COMENTARIOS_JURADO']) !!}
+                </td>
+            </tr>
+        </table> 
+        @endif
+        @if ($dato['COMENTARIO_JURADO_GRUPAL'] != '')
+        <br>
+        <table  cellspacing=0 cellpadding=0 width="100%">
+            <tr>
+                <td class="subtitulo">
+                    Comentario Grupal de Jurado:
+                </td>
+            </tr>
+            <tr>
+                <td class="cajaBgAzul">
+                    {!! nl2br($dato['COMENTARIO_JURADO_GRUPAL']) !!}
+                </td>
+            </tr>
+        </table> 
+        @endif
+        
+
         @if ($num<count($datos))
             <div class="page-break"></div>
         @endif
