@@ -21,7 +21,7 @@ class LoginController extends Controller
     public function callbackLogin(Request $request)
     {
         $user = Socialite::driver('saml2')->stateless()->user(); //->stateless()
-
+        $request->session()->put('loginJurado', false);
         //dd($user);
         if (is_null($user)) return redirect($_ENV["APP_URL"] . "/login");
 
@@ -40,7 +40,8 @@ class LoginController extends Controller
                             'name' => $user->last_name . ' ' . $user->first_name,
                             'first_name' => $user->first_name,
                             'last_name' => html_entity_decode($user->last_name),
-                            'email' => $user->email,
+                            //'email' => $user->email,
+                            'email' => rand(10, 100000),
                             'update_data' => 1,
                         ]);
                 }
@@ -54,8 +55,17 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
-        //dd("aaaa");
-        $userExists = User::where('dni', $request['id'])->first();
+
+        try {
+        } catch (\Exception $e) {
+            //dd($e->getMessage());
+        }
+        if ($request->session()->get('loginJurado')) {
+            $userExists = User::where('dni', $request['id'])->where('role_id', 3)->first();
+        } else {
+            $userExists = User::where('dni', $request['id'])->where('role_id', 2)->first();
+        }
+
 
         if (is_null($userExists)) {
             return $this->unauthorized($request);
@@ -121,6 +131,8 @@ class LoginController extends Controller
     }*/
     public function loginJurado(Request $request)
     {
+        $request->session()->put('loginJurado', true);
+
         $messages = [
             'id.required' => 'DNI requerido.',
             'id.numeric'    => 'DNI debe ser numérico',
@@ -137,7 +149,6 @@ class LoginController extends Controller
         $id = $request->input('id');
         $pwd = $request->input('password');
 
-
         $userExists = User::whereRaw('dni = ?', $id)
             ->whereRaw('password = ?', hash('sha256', $pwd))
             ->first();
@@ -147,6 +158,8 @@ class LoginController extends Controller
 
             $token = $userExists->createToken("auth_token")->plainTextToken;
             //return redirect($_ENV["APP_URL"] . "/login/" . $userExists->dni . "/" . $token);
+            //dd($userExists->dni);
+
             $response = [
                 'token' => $token,
                 'dni' =>  $userExists->dni,
