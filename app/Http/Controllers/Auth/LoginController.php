@@ -100,7 +100,7 @@ class LoginController extends Controller
         $rsPeriodo = Data::currentTermCodeCT();
         //$request->session()->put('periodo', ($rsPeriodo) ?  $rsPeriodo->cperiodo : '202410');
         //$request->session()->put('periodo', ($rsPeriodo) ?  $rsPeriodo->cperiodo : '202410');
-        $request->session()->put('periodo', ($rsPeriodo) ?  $rsPeriodo->cperiodo : '202310');
+        $request->session()->put('periodo', ($rsPeriodo) ?  $rsPeriodo->cperiodo : '202410');
 
         $response = [
             'token' => $request['password'],
