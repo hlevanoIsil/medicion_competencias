@@ -179,24 +179,34 @@ import gruposInterfaz from './grupos-components/gruposInterfaz.vue';
       if(userData.role_id == 2){
         $http.post('/grupos/list-nrcs-docente')
         .then(response => {
-        //console.log(response.data.actividad)
-            fecha_hora.value = response.data.actividad
-            nrcs.value = response.data.data
-            response.data.data.forEach((element) => 
+          //console.log(response.data.actividad)
+          fecha_hora.value = response.data.actividad
+          nrcs.value = NRCRepetido(response.data.data)
+          nrcs.value.forEach( data => {
+            if(data.INICIO_CLASE == null || data.FIN_CLASE == null){
+              return data.LABEL = data.NRC_CURSO + ' - ' + data.MODALIDAD
+            }
+          })
+          nrcs.value.forEach((element) => 
                 nrcs_lbls[element['NRC']] = element
             );
             nrcs_lbls2.value = nrcs_lbls
-            setOverlay(false)
+            setOverlay(false) 
         })
       }else if(userData.role_id == 3){
         $http.post('/grupos/list-nrcs-jurado')
         .then(response => {
-            nrcs.value = response.data.data
-            response.data.data.forEach((element) => 
-                nrcs_lbls[element['NRC']] = element
-            );
-            nrcs_lbls2.value = nrcs_lbls
-            setOverlay(false)
+          nrcs.value = NRCRepetido(response.data.data)
+          nrcs.value.forEach( data => {
+            if(data.INICIO_CLASE == null || data.FIN_CLASE == null){
+              return data.LABEL = data.NRC_CURSO + ' - ' + data.MODALIDAD
+            }
+          })
+          nrcs.value.forEach((element) => 
+              nrcs_lbls[element['NRC']] = element
+          );
+          nrcs_lbls2.value = nrcs_lbls
+          setOverlay(false)
         })
       }
 
@@ -211,7 +221,9 @@ import gruposInterfaz from './grupos-components/gruposInterfaz.vue';
     isShowEvaluacion.value = false
   }
   function changeNrc(){ 
-    entityData.value.horario = '' + nrcs_lbls[entityData.value.nrc]['INICIO_CLASE'] + ' - ' + nrcs_lbls[entityData.value.nrc]['FIN_CLASE']
+    let inicio = nrcs_lbls[entityData.value.nrc]['INICIO_CLASE']
+    let fin = nrcs_lbls[entityData.value.nrc]['FIN_CLASE']
+    entityData.value.horario = inicio != null ? inicio + ' - '  + fin : 'SIN HORARIO'
     entityData.value.mod_sede = nrcs_lbls[entityData.value.nrc]['MODALIDAD'] + ((nrcs_lbls[entityData.value.nrc]['SEDE']) ? (' - ' + nrcs_lbls[entityData.value.nrc]['SEDE']) : '')
     entityData.value.curso = nrcs_lbls[entityData.value.nrc]['CURSO']
     entityData.value.cod_curso = nrcs_lbls[entityData.value.nrc]['COD_CURSO']
@@ -226,4 +238,25 @@ import gruposInterfaz from './grupos-components/gruposInterfaz.vue';
     onBeforeMount(() => {
         initialize() 
     })
+
+  const NRCRepetido = (arreglo) => {
+    let idsSet = new Set();
+    let codigo = [];
+
+    arreglo.forEach(item => {
+      if (idsSet.has(item.NRC)) {
+        codigo.push(item.NRC)
+      } else {
+        idsSet.add(item.NRC);
+      }
+    });
+    return nuevoArreglo(arreglo, codigo)
+  }
+
+  const nuevoArreglo = (arreglo, codigo) => {
+    codigo.forEach( element => {
+      arreglo = arreglo.filter( item => !(item.NRC == element && item.SSRMEET_SCHD_CODE == 'VIR') )
+    })
+    return arreglo
+  }
 </script>

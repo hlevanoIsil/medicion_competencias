@@ -189,7 +189,7 @@
                     <strong>Grupo {{$dato['GRUPO']}}</strong>
                 </td>
                 <td align="right" >
-                    Calificación <span class="cajaCalif">{{$dato['NOTA_FINAL']}}</span> 
+                    Calificación <span class="cajaCalif">{{ceil($dato['NOTA_FINAL'])}}</span> 
                 </td>
             </tr>
         </table>

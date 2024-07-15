@@ -211,8 +211,14 @@ import { ref } from 'vue';
       })
       $http.post('/grupos/list-nrcs-docente')
         .then(response => {
-            nrcs.value = response.data.data
-            response.data.data.forEach((element) => 
+            // nrcs.value = response.data.data
+            nrcs.value = NRCRepetido(response.data.data)
+            nrcs.value.forEach( data => {
+              if(data.INICIO_CLASE == null || data.FIN_CLASE == null){
+                return data.LABEL = data.NRC_CURSO + ' - ' + data.MODALIDAD
+              }
+            })
+            nrcs.value.forEach((element) => 
                 nrcs_lbls[element['NRC']] = element
             );
             setOverlay(false)
@@ -285,4 +291,25 @@ import { ref } from 'vue';
   onBeforeMount(() => { 
     initialize() 
   })
+
+  const NRCRepetido = (arreglo) => {
+    let idsSet = new Set();
+    let codigo = [];
+
+    arreglo.forEach(item => {
+      if (idsSet.has(item.NRC)) {
+        codigo.push(item.NRC)
+      } else {
+        idsSet.add(item.NRC);
+      }
+    });
+    return nuevoArreglo(arreglo, codigo)
+  }
+
+  const nuevoArreglo = (arreglo, codigo) => {
+    codigo.forEach( element => {
+      arreglo = arreglo.filter( item => !(item.NRC == element && item.SSRMEET_SCHD_CODE == 'VIR') )
+    })
+    return arreglo
+  }
 </script>
