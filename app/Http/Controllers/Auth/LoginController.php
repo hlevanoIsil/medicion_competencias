@@ -136,13 +136,13 @@ class LoginController extends Controller
         $messages = [
             'id.required' => 'DNI requerido.',
             'id.numeric'    => 'DNI debe ser numérico',
-            'id.digits'    => 'El DNI debe ser número de 8 dígitos',
+            'id.digits_between'    => 'El DNI debe ser número de 8 o 10 dígitos',
             'id.alpha_dash'   => 'No Autorizado',
             'password.max'   => 'No Autorizado.',
         ];
         $request->validate([
-            'id' => ['required', 'numeric', 'digits:8', 'alpha_dash'],
-            'password' => ['max:10']
+            'id' => ['required', 'numeric', 'digits_between:8,10', 'alpha_dash'],
+            'password' => ['max:15']
         ], $messages);
 
         // Sanitize the input (optional, but recommended)

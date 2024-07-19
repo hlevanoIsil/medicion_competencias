@@ -601,8 +601,9 @@ export default {
                     }     
                     this.totAlumnos = response.data.data.length
                     //console.log(response.data.coment_grupal) 
-                    //console.log(response.data.data )      
-                    this.itemsNot = response.data.data 
+                    //console.log(response.data.data )  
+
+                    this.itemsNot = response.data.data  
                     this.entityData.commentGrupal = response.data.coment_grupal
 
                     /*
