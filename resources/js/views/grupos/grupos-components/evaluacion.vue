@@ -231,7 +231,7 @@
                                                 class="mr-1 ml-1 pr-1 pl-1"
                                             >
                                                 <v-list-sub-header v-if="i === 'subheader'" > <strong>{{  itemv }}</strong> </v-list-sub-header>
-                                                <v-list-item-title class="listaItem" v-if="i !== 'subheader'"  @click="calificarGrupal(indexC, itemv.COD);" v-bind:title="itemv.DESCR">{{ itemv.PUNT }}</v-list-item-title>
+                                                <v-list-item-title :class="['lista-main', itemv.PUNT === 'X' ? 'listItem2' : 'listItem']" v-if="i !== 'subheader'"  @click="calificarGrupal(indexC, itemv.COD);" v-bind:title="itemv.DESCR">{{ itemv.PUNT }}</v-list-item-title>
                                             </v-list-item>
                                         </v-list>
                                     </v-menu>
@@ -259,7 +259,7 @@
                                             class="mr-1 ml-1 pr-1 pl-1"
                                         >
                                             <v-list-sub-header v-if="i === 'subheader'" > <strong>{{  itemv }}</strong> </v-list-sub-header>
-                                            <v-list-item-title class="listaItem" v-if="i !== 'subheader'" @click="calificarIndividual(item.PIDM, indexC, itemv.COD); item['notas'][indexC] = itemv.PUNT"><span v-bind:title="itemv.DESCR" >{{ itemv.PUNT }}</span></v-list-item-title>
+                                            <v-list-item-title :class="['lista-main', itemv.PUNT === 'X' ? 'listItem2' : 'listItem']" v-if="i !== 'subheader'" @click="calificarIndividual(item.PIDM, indexC, itemv.COD); itemv.PUNT == 'X' ? item['notas'][indexC] = null : item['notas'][indexC] = itemv.PUNT"><span v-bind:title="itemv.DESCR" >{{ itemv.PUNT }}</span></v-list-item-title>
                                         </v-list-item>
                                     </v-list>
                                 </v-menu>
@@ -275,7 +275,7 @@
                                             class="mr-1 ml-1 pr-1 pl-1"
                                         >
                                             <v-list-sub-header v-if="i === 'subheader'" > <strong>{{  itemv }}</strong> </v-list-sub-header>
-                                            <v-list-item-title class="listaItem" v-if="i !== 'subheader'" @click="calificarIndividual(item.PIDM, indexC, itemv.COD); item['notas'][indexC] = itemv.PUNT"><span v-bind:title="itemv.DESCR" >{{ itemv.PUNT }}</span></v-list-item-title>
+                                            <v-list-item-title :class="['lista-main', itemv.PUNT === 'X' ? 'listItem2' : 'listItem']" v-if="i !== 'subheader'" @click="calificarIndividual(item.PIDM, indexC, itemv.COD); itemv.PUNT == 'X' ? item['notas'][indexC] = null : item['notas'][indexC] = itemv.PUNT"><span v-bind:title="itemv.DESCR" >{{ itemv.PUNT }}</span></v-list-item-title>
                                         </v-list-item>
                                     </v-list>
                                 </v-menu>
@@ -505,6 +505,7 @@ export default {
         cargarRubricas(){
             this.$http.post('evaluacion/list-rubricas-x-curso', this.entityData)
                 .then(response => {
+                  console.log(response.data.criterios)
                     //this.grupos = []
                     //console.log(response.data.criterios)       
                     //response.data.data.push({GRUPO_SOLO: '', GRUPO: 'Elegir grupo'});             
@@ -723,12 +724,19 @@ export default {
     border-radius: 5px;
 
 }
-.listaItem{
-    background-color: #003045 !important;
-    color: #FFFFFF !important;
+.lista-main{
     font-weight: bold;
     cursor: pointer;
-
+}
+.listItem{
+    background-color: #003045 !important;
+    color: #FFFFFF !important;
+}
+.listItem2{
+    background-color: #ff5757 !important;
+    padding:0.5px 5px;
+    border-radius: 50%;
+    color: #FFF  !important;
 }
 .tdBlue{
     background-color: #44c7ff;

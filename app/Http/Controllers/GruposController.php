@@ -6,18 +6,30 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Models\Actividad;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use stdClass;
 
 class GruposController extends Controller
 {
 
     public static function listNrcsDocente(Request $request)
     {
+        $data_nrc = [];
+        $json_nrcs = Storage::disk('local')->get('nrc_docente.json');
+        $nrc_docentes = json_decode($json_nrcs, true)['nrc_docentes'];
 
         //DNI DE PRUEBA CON NRCS = 06016500
         $dni = Auth()->user()->dni;
         //$dni = '07732571';
         $periodo = $request->session()->get('periodo');
         //$dni = '10253131';
+
+        $nrc_docentes = array_filter($nrc_docentes, function ($nrc) use ($dni) {
+            return $nrc['DNI'] == $dni;
+        });
+        foreach ($nrc_docentes as $item) {
+            array_push($data_nrc, $item);
+        }
 
         $pdo = DB::connection('oracle')->getPdo();
         $stmt = $pdo->prepare("BEGIN ISIL.SP_MEDICIONCOMP_LISTAR_NRC_X_DOCENTES(:periodo, :dni, :cursor); END;");
@@ -30,12 +42,19 @@ class GruposController extends Controller
         oci_fetch_all($cursor, $data, null, null, OCI_FETCHSTATEMENT_BY_ROW);
         oci_free_statement($cursor);
         $stmt->closeCursor();
+        
+        $collection1 = collect($data);
+        $collection2 = collect($data_nrc);
+        $intersected = $collection1->intersectByKeys($collection2, function ($item1, $item2) {
+            return $item1['NRC'] <=> $item2['NRC'];
+        });
+        $result = $intersected->values()->all();
 
         $actividad = Actividad::getLast();
         //dd($actividad['fecha_hora']);
         return [
-            "data" => $data,
-            'rows' => count($data),
+            "data" => $result,
+            'rows' => count($result),
             'actividad' => $actividad
         ];
     }
