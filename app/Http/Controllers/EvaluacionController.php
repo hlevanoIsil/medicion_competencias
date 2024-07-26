@@ -78,6 +78,10 @@ class EvaluacionController extends Controller
                             $criterios[$crit]['PUN_NP']['PUNT'] = "NP";
                             $criterios[$crit]['PUN_NP']['DESCR'] = "No se presentó";
                             $criterios[$crit]['PUN_NP']['COD'] = 6;
+
+                            $criterios[$crit]['PUN_X']['PUNT'] = "X";
+                            $criterios[$crit]['PUN_X']['DESCR'] = "Eliminar";
+                            $criterios[$crit]['PUN_X']['COD'] = null;
                         }
                     }
                 }
