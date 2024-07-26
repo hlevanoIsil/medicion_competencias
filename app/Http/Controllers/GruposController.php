@@ -45,9 +45,9 @@ class GruposController extends Controller
         
         $collection1 = collect($data);
         $collection2 = collect($data_nrc);
-        $intersected = $collection1->intersectByKeys($collection2, function ($item1, $item2) {
-            return $item1['NRC'] <=> $item2['NRC'];
-        });
+        $keys1 = $collection1->keyBy('NRC');
+        $keys2 = $collection2->keyBy('NRC');
+        $intersected = $keys1->intersectByKeys($keys2);
         $result = $intersected->values()->all();
 
         $actividad = Actividad::getLast();
