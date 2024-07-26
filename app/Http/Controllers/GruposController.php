@@ -43,9 +43,10 @@ class GruposController extends Controller
     {
         //DNI DE PRUEBA CON NRCS = 06016500
         $dni = Auth()->user()->dni;
-        //dd($dni);
+
         //$dni = '09588929';
         $periodo = $request->session()->get('periodo');
+
 
         $pdo = DB::connection('oracle')->getPdo();
         $stmt = $pdo->prepare("BEGIN ISIL.SP_MEDICIONCOMP_LISTAR_NRC_X_JURADO(:periodo, :dni, :cursor); END;");
@@ -58,6 +59,7 @@ class GruposController extends Controller
         oci_fetch_all($cursor, $data, null, null, OCI_FETCHSTATEMENT_BY_ROW);
         oci_free_statement($cursor);
         $stmt->closeCursor();
+        //dd($data);
         return [
             "data" => $data,
             'rows' => count($data)
